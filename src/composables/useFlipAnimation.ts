@@ -7,6 +7,8 @@ interface FlipSnapshot {
 }
 
 const pendingFlip = ref<FlipSnapshot | null>(null)
+const isAnimating = ref(false)
+let animationTimer: ReturnType<typeof setTimeout> | null = null
 
 const DURATION = 300
 const EASING = 'cubic-bezier(0.2, 0, 0.2, 1)'
@@ -32,7 +34,7 @@ export function useFlipAnimation() {
     pendingFlip.value = { rects, movedNodeId, timestamp: Date.now() }
   }
 
-  function playFlipAnimation(doc: Document) {
+  function playFlipAnimation(doc: Document, onComplete?: () => void) {
     const flip = pendingFlip.value
     if (!flip) return
 
@@ -41,6 +43,14 @@ export function useFlipAnimation() {
       pendingFlip.value = null
       return
     }
+
+    // Clear any previous animation timer
+    if (animationTimer) {
+      clearTimeout(animationTimer)
+      animationTimer = null
+    }
+
+    isAnimating.value = true
 
     const elements = doc.querySelectorAll('[class*="node-"]')
 
@@ -79,11 +89,23 @@ export function useFlipAnimation() {
     }
 
     pendingFlip.value = null
+
+    // Signal animation end after DURATION, then fire callback
+    animationTimer = setTimeout(() => {
+      isAnimating.value = false
+      animationTimer = null
+      onComplete?.()
+    }, DURATION)
   }
 
   function cancelFlip() {
     pendingFlip.value = null
+    if (animationTimer) {
+      clearTimeout(animationTimer)
+      animationTimer = null
+    }
+    isAnimating.value = false
   }
 
-  return { captureBeforeMove, playFlipAnimation, cancelFlip }
+  return { captureBeforeMove, playFlipAnimation, cancelFlip, isAnimating }
 }

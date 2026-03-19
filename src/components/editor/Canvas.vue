@@ -19,7 +19,7 @@ const previewStore = usePreviewStore()
 const dragStore = useDragStore()
 const { compiledHtml, mjmlSource } = useMjmlCompiler()
 const { onDragEnd } = useDragDrop()
-const { captureBeforeMove, playFlipAnimation, cancelFlip } = useFlipAnimation()
+const { captureBeforeMove, playFlipAnimation, cancelFlip, isAnimating } = useFlipAnimation()
 
 const iframeDoc = ref<Document | null>(null)
 const canvasRef = ref<HTMLElement>()
@@ -82,13 +82,22 @@ function updateSelectionRects() {
 
 watch([() => editorStore.selectedId, () => editorStore.hoveredId], updateSelectionRects)
 watch(compiledHtml, () => {
-  setTimeout(updateSelectionRects, 200)
+  // Don't update rects mid-animation — onIframeReady handles it after FLIP completes
+  if (!isAnimating.value) {
+    setTimeout(updateSelectionRects, 200)
+  }
 })
 
 function onIframeReady(doc: Document) {
   iframeDoc.value = doc
-  playFlipAnimation(doc)
-  setTimeout(updateSelectionRects, 100)
+  // Hide selection boxes before attempting FLIP
+  selectedRect.value = null
+  hoveredRect.value = null
+  playFlipAnimation(doc, updateSelectionRects)
+  // If no FLIP was pending, playFlipAnimation returns immediately without setting isAnimating
+  if (!isAnimating.value) {
+    setTimeout(updateSelectionRects, 100)
+  }
 }
 
 function onNodeClick(nodeId: string) {
