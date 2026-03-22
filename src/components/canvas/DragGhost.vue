@@ -52,7 +52,7 @@ const LABEL_MAP: Record<string, string> = {
   'mj-navbar-link': 'Nav Link',
   'mj-group': 'Group',
   'mj-table': 'Table',
-  'mj-raw': 'Raw HTML',
+  'mj-raw': 'HTML',
   'mj-carousel': 'Carousel',
   'mj-carousel-image': 'Slide',
   'mj-accordion': 'Accordion',

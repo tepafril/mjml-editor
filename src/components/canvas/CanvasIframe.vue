@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
   html: string
@@ -102,7 +102,7 @@ onMounted(() => {
 <template>
   <iframe
     ref="iframeRef"
-    class="w-full h-full border-0 bg-white"
+    class="w-full h-full border-0"
     sandbox="allow-same-origin"
   />
 </template>

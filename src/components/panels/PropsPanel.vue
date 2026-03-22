@@ -102,7 +102,7 @@ const childTypeName = computed(() => {
       />
     </div>
 
-    <!-- Raw HTML content -->
+    <!-- HTML content -->
     <div v-if="HAS_RAW_CONTENT.has(node.type)">
       <label class="text-xs text-gray-500 mb-1 block">HTML Content</label>
       <textarea

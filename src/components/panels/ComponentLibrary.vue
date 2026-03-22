@@ -34,7 +34,7 @@ const COMPONENTS = [
   { type: 'mj-spacer' as NodeType, label: 'Spacer', icon: ChevronsUpDown, group: 'Layout' },
   // Advanced
   { type: 'mj-accordion' as NodeType, label: 'Accordion', icon: ListCollapse, group: 'Advanced' },
-  { type: 'mj-raw' as NodeType, label: 'Raw HTML', icon: Code, group: 'Advanced' },
+  { type: 'mj-raw' as NodeType, label: 'HTML', icon: Code, group: 'Advanced' },
 ]
 
 const filteredComponents = computed(() => {

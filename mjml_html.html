@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MJML Components Reference</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f8f9fa;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e 50%,#0f3460);color:#fff;padding:24px 20px 16px}
+.header-inner{max-width:900px;margin:0 auto}
+.header-title{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.header-title span.logo{font-size:28px;font-weight:800;letter-spacing:-1px}
+.badge{background:#e94560;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
+.header p{opacity:.7;font-size:13px;margin-bottom:14px}
+#search{width:100%;max-width:500px;padding:8px 14px;border-radius:8px;border:none;font-size:14px;outline:none}
+.tabs{background:#fff;border-bottom:1px solid #e5e7eb;overflow-x:auto;white-space:nowrap}
+.tabs-inner{max-width:900px;margin:0 auto;display:flex;gap:2px;padding:0 20px}
+.tab-btn{padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13px;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap}
+.tab-btn.active{font-weight:700;color:#0f3460;border-bottom:2px solid #0f3460}
+.main{max-width:900px;margin:0 auto;padding:20px}
+.cat-label{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:0 0 10px}
+.comp-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:10px;overflow:hidden}
+.comp-header{width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;text-align:left}
+.comp-name{font-family:monospace;font-weight:700;font-size:15px;color:#0f3460}
+.cat-tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;background:#f0f4ff;color:#4f46e5}
+.attr-count{font-size:12px;color:#9ca3af}
+.spacer{flex:1}
+.copy-btn{padding:4px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.copy-btn:hover{background:#0f3460;color:#fff;border-color:#0f3460}
+.copy-btn.copied{background:#16a34a;color:#fff;border-color:#16a34a}
+.chevron{font-size:16px;color:#9ca3af}
+.comp-desc{padding:0 16px 10px;font-size:13px;color:#6b7280}
+.attr-table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:#f9fafb}
+th{padding:8px 12px;text-align:left;font-weight:600;color:#374151;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;white-space:nowrap;font-size:12px}
+tbody tr:nth-child(odd){background:#fff}
+tbody tr:nth-child(even){background:#fafafa}
+td{padding:7px 12px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+td.attr-name{font-family:monospace;color:#0f3460;font-weight:600;white-space:nowrap}
+td.attr-accepts{color:#7c3aed;font-family:monospace;font-size:12px;white-space:nowrap}
+code.def{background:#f3f4f6;padding:1px 6px;border-radius:4px;font-size:12px}
+.empty-attrs{padding:8px 16px 14px;font-size:13px;color:#9ca3af;font-style:italic}
+.no-results{text-align:center;padding:40px;color:#9ca3af}
+.cat-section{margin-bottom:24px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <span class="logo">MJML</span>
+      <span class="badge">Components Reference</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <p style="margin:0;opacity:.7;font-size:13px">All standard components with their attributes, accepted values, and defaults.</p>
+      <button id="copyAllBtn" onclick="copyAll(this)" style="padding:6px 16px;font-size:13px;font-weight:700;border-radius:7px;border:1.5px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s">Copy All JSON</button>
+    </div>
+    <input id="search" placeholder="Search components or attributes…" oninput="render()"/>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner" id="tabs"></div>
+</div>
+
+<div class="main" id="main"></div>
+
+<script>
+const data = {
+  Root:[{name:"mjml",desc:"Root element of every MJML document. Can only contain mj-head and mj-body.",attrs:[
+    {attr:"owa",accepts:"string",def:"none",desc:"Set to `desktop` to force desktop view for older Outlook.com versions"},
+    {attr:"lang",accepts:"string",def:"und",desc:"Adds lang attribute to html and body > div tags"},
+    {attr:"dir",accepts:"string",def:"auto",desc:"Adds dir attribute to html and body > div tags"},
+  ]}],
+  Head:[
+    {name:"mj-head",desc:"Contains head components (styles, fonts, attributes, etc.). No attributes.",attrs:[]},
+    {name:"mj-body",desc:"Starting point of the email content.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"General background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class name added to root HTML element"},
+      {attr:"width",accepts:"px",def:"600px",desc:"Email width"},
+    ]},
+    {name:"mj-include",desc:"Includes external .mjml, .css, or .html files.",attrs:[
+      {attr:"path",accepts:"string",def:"",desc:"Path to the external file (required)"},
+      {attr:"type",accepts:"css | html",def:"",desc:"Specify file type when including non-MJML files"},
+      {attr:"css-inline",accepts:"inline",def:"",desc:"Inline the included CSS"},
+    ]},
+    {name:"mj-attributes",desc:"Override default attributes for components. Use mj-all, mj-class, or component tags inside.",attrs:[
+      {attr:"(any component tag)",accepts:"any component attributes",def:"",desc:"Set default attributes for that component"},
+      {attr:"mj-all",accepts:"any",def:"",desc:"Applies attribute defaults to all components"},
+      {attr:"mj-class name",accepts:"string",def:"",desc:"Named class applied via mj-class attribute"},
+    ]},
+    {name:"mj-breakpoint",desc:"Controls at what width the layout shifts between mobile/desktop.",attrs:[
+      {attr:"width",accepts:"px",def:"",desc:"Breakpoint width value"},
+    ]},
+    {name:"mj-font",desc:"Imports external fonts. Only applied if the font is used in the template.",attrs:[
+      {attr:"href",accepts:"string (URL)",def:"",desc:"URL of a hosted CSS file with @font-face declaration"},
+      {attr:"name",accepts:"string",def:"",desc:"Name of the font"},
+    ]},
+    {name:"mj-html-attributes",desc:"Adds custom attributes to HTML tags using CSS selectors. Uses mj-selector + mj-html-attribute inside.",attrs:[
+      {attr:"mj-selector path",accepts:"CSS selector string",def:"",desc:"CSS selector targeting generated HTML elements"},
+      {attr:"mj-html-attribute name",accepts:"string",def:"",desc:"Attribute name to add to matched HTML elements"},
+    ]},
+    {name:"mj-preview",desc:"Sets the inbox preview text shown to recipients. No attributes — content is its text node.",attrs:[]},
+    {name:"mj-style",desc:"Adds CSS styles to the document.",attrs:[
+      {attr:"inline",accepts:"inline",def:"",desc:"Set to `inline` to inline the styles into HTML elements"},
+    ]},
+    {name:"mj-title",desc:"Defines the document title (populates <title> tag and aria-label). No attributes — content is text.",attrs:[]},
+  ],
+  Layout:[
+    {name:"mj-section",desc:"Rows within your email. Must contain mj-column. Cannot be nested.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Section background color"},
+      {attr:"background-position",accepts:"string",def:"top center",desc:"CSS background-position (e.g. left top)"},
+      {attr:"background-position-x",accepts:"string",def:"",desc:"Horizontal background position"},
+      {attr:"background-position-y",accepts:"string",def:"",desc:"Vertical background position"},
+      {attr:"background-repeat",accepts:"repeat | no-repeat",def:"",desc:"Background image repeat"},
+      {attr:"background-size",accepts:"string",def:"auto",desc:"CSS background-size (auto, cover, contain, px, %)"},
+      {attr:"background-url",accepts:"string (URL)",def:"",desc:"Background image URL"},
+      {attr:"border",accepts:"string",def:"",desc:"CSS border format"},
+      {attr:"border-bottom",accepts:"string",def:"",desc:"Bottom border"},
+      {attr:"border-left",accepts:"string",def:"",desc:"Left border"},
+      {attr:"border-radius",accepts:"string",def:"",desc:"Border radius"},
+      {attr:"border-right",accepts:"string",def:"",desc:"Right border"},
+      {attr:"border-top",accepts:"string",def:"",desc:"Top border"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"direction",accepts:"ltr | rtl",def:"ltr",desc:"Display order of child columns"},
+      {attr:"full-width",accepts:"full-width",def:"",desc:"Expands section to 100% width"},
+      {attr:"padding",accepts:"px | %",def:"20px 0",desc:"Section padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"text-align",accepts:"left | center | right",def:"center",desc:"Text alignment"},
+    ]},
+    {name:"mj-column",desc:"Columns inside sections. Stacks on mobile. Width auto-divided unless set manually.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Column background color"},
+      {attr:"border",accepts:"string",def:"",desc:"CSS border"},
+      {attr:"border-bottom",accepts:"string",def:"",desc:"Bottom border"},
+      {attr:"border-left",accepts:"string",def:"",desc:"Left border"},
+      {attr:"border-radius",accepts:"px | %",def:"",desc:"Border radius"},
+      {attr:"border-right",accepts:"string",def:"",desc:"Right border"},
+      {attr:"border-top",accepts:"string",def:"",desc:"Top border"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"direction",accepts:"ltr | rtl",def:"ltr",desc:"Display order of direct children"},
+      {attr:"inner-background-color",accepts:"CSS color",def:"",desc:"Inner background color (requires padding)"},
+      {attr:"inner-border",accepts:"string",def:"",desc:"Inner border (requires padding)"},
+      {attr:"inner-border-bottom",accepts:"string",def:"",desc:"Inner bottom border (requires padding)"},
+      {attr:"inner-border-left",accepts:"string",def:"",desc:"Inner left border (requires padding)"},
+      {attr:"inner-border-radius",accepts:"px | %",def:"",desc:"Inner border radius (requires padding)"},
+      {attr:"inner-border-right",accepts:"string",def:"",desc:"Inner right border (requires padding)"},
+      {attr:"inner-border-top",accepts:"string",def:"",desc:"Inner top border (requires padding)"},
+      {attr:"padding",accepts:"px | %",def:"",desc:"Column padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"vertical-align",accepts:"top | middle | bottom",def:"top",desc:"Vertical alignment (middle applies only when all columns use it)"},
+      {attr:"width",accepts:"px | %",def:"100/n columns %",desc:"Column width"},
+    ]},
+    {name:"mj-group",desc:"Wraps columns to prevent them from stacking on mobile.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Background color for the group"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"direction",accepts:"ltr | rtl",def:"ltr",desc:"Display order of direct children"},
+      {attr:"vertical-align",accepts:"string",def:"",desc:"CSS values: middle, top, bottom"},
+      {attr:"width",accepts:"px | %",def:"100/n columns %",desc:"Group width"},
+    ]},
+    {name:"mj-wrapper",desc:"Wraps multiple sections together — useful for shared backgrounds/borders.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Wrapper background color"},
+      {attr:"background-position",accepts:"string",def:"top center",desc:"CSS background-position"},
+      {attr:"background-position-x",accepts:"string",def:"",desc:"Horizontal background position"},
+      {attr:"background-position-y",accepts:"string",def:"",desc:"Vertical background position"},
+      {attr:"background-repeat",accepts:"repeat | no-repeat",def:"repeat",desc:"Background image repeat"},
+      {attr:"background-size",accepts:"string",def:"auto",desc:"CSS background-size"},
+      {attr:"background-url",accepts:"string (URL)",def:"",desc:"Background image URL"},
+      {attr:"border",accepts:"string",def:"",desc:"CSS border"},
+      {attr:"border-bottom",accepts:"string",def:"",desc:"Bottom border"},
+      {attr:"border-left",accepts:"string",def:"",desc:"Left border"},
+      {attr:"border-radius",accepts:"string",def:"",desc:"Border radius"},
+      {attr:"border-right",accepts:"string",def:"",desc:"Right border"},
+      {attr:"border-top",accepts:"string",def:"",desc:"Top border"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"full-width",accepts:"full-width",def:"",desc:"Expands to 100% width"},
+      {attr:"padding",accepts:"px | %",def:"20px 0",desc:"Wrapper padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"text-align",accepts:"left | center | right",def:"center",desc:"Text alignment"},
+    ]},
+  ],
+  Content:[
+    {name:"mj-text",desc:"Displays a block of text. Ending tag — can contain HTML but not other MJML components.",attrs:[
+      {attr:"align",accepts:"left | center | right | justify",def:"left",desc:"Text horizontal alignment"},
+      {attr:"color",accepts:"CSS color",def:"#000000",desc:"Text color"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Background color of the cell"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-style",accepts:"string",def:"",desc:"CSS font-style (normal, italic, oblique)"},
+      {attr:"font-weight",accepts:"string",def:"",desc:"Font weight"},
+      {attr:"height",accepts:"px | %",def:"",desc:"Text block height"},
+      {attr:"letter-spacing",accepts:"px | em",def:"none",desc:"Letter spacing"},
+      {attr:"line-height",accepts:"px | %",def:"22px",desc:"Line height"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Text padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"text-decoration",accepts:"string",def:"",desc:"CSS text-decoration"},
+      {attr:"text-transform",accepts:"string",def:"",desc:"CSS text-transform"},
+    ]},
+    {name:"mj-button",desc:"Displays a customizable button. Ending tag.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Horizontal alignment"},
+      {attr:"background-color",accepts:"CSS color",def:"#414141",desc:"Button background color"},
+      {attr:"border",accepts:"string",def:"none",desc:"CSS border"},
+      {attr:"border-bottom",accepts:"string",def:"",desc:"Bottom border"},
+      {attr:"border-left",accepts:"string",def:"",desc:"Left border"},
+      {attr:"border-radius",accepts:"string",def:"3px",desc:"Border radius"},
+      {attr:"border-right",accepts:"string",def:"",desc:"Right border"},
+      {attr:"border-top",accepts:"string",def:"",desc:"Top border"},
+      {attr:"color",accepts:"CSS color",def:"#ffffff",desc:"Text color"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Button container background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-style",accepts:"string",def:"",desc:"CSS font-style"},
+      {attr:"font-weight",accepts:"string",def:"normal",desc:"Font weight"},
+      {attr:"height",accepts:"px | %",def:"",desc:"Button height"},
+      {attr:"href",accepts:"string (URL)",def:"",desc:"Link URL"},
+      {attr:"inner-padding",accepts:"px | %",def:"10px 25px",desc:"Inner button padding (up to 4 values)"},
+      {attr:"letter-spacing",accepts:"px | em",def:"",desc:"Letter spacing"},
+      {attr:"line-height",accepts:"px | %",def:"120%",desc:"Line height on link"},
+      {attr:"name",accepts:"string",def:"",desc:"Name attribute for the button link"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Button container padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"rel",accepts:"string",def:"",desc:"Rel attribute for the link"},
+      {attr:"target",accepts:"string",def:"_blank",desc:"Link target"},
+      {attr:"text-align",accepts:"left | center | right",def:"",desc:"Text alignment inside button"},
+      {attr:"text-decoration",accepts:"string",def:"none",desc:"Text decoration"},
+      {attr:"text-transform",accepts:"string",def:"none",desc:"Text transform"},
+      {attr:"title",accepts:"string",def:"",desc:"Tooltip and accessibility"},
+      {attr:"vertical-align",accepts:"top | bottom | middle | vertical",def:"middle",desc:"Vertical alignment"},
+      {attr:"width",accepts:"px | %",def:"",desc:"Button width"},
+    ]},
+    {name:"mj-image",desc:"Displays a responsive image.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Image alignment"},
+      {attr:"alt",accepts:"string",def:"''",desc:"Image alt text"},
+      {attr:"border",accepts:"string",def:"0",desc:"CSS border"},
+      {attr:"border-bottom",accepts:"string",def:"",desc:"Bottom border"},
+      {attr:"border-left",accepts:"string",def:"",desc:"Left border"},
+      {attr:"border-radius",accepts:"px | %",def:"",desc:"Border radius"},
+      {attr:"border-right",accepts:"string",def:"",desc:"Right border"},
+      {attr:"border-top",accepts:"string",def:"",desc:"Top border"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Cell background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"fluid-on-mobile",accepts:"boolean",def:"",desc:"Full width on mobile even if width is set"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Alt text font size when image doesn't render"},
+      {attr:"height",accepts:"px",def:"auto",desc:"Image height"},
+      {attr:"href",accepts:"string (URL)",def:"",desc:"Link URL on click"},
+      {attr:"max-height",accepts:"px | %",def:"",desc:"Maximum image height"},
+      {attr:"name",accepts:"string",def:"",desc:"Link name attribute"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Image padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"rel",accepts:"string",def:"",desc:"Rel attribute"},
+      {attr:"sizes",accepts:"string",def:"",desc:"Set width based on media query"},
+      {attr:"src",accepts:"string (URL)",def:"",desc:"Image source URL"},
+      {attr:"srcset",accepts:"string",def:"",desc:"Responsive image source set (CSS syntax)"},
+      {attr:"target",accepts:"string",def:"_blank",desc:"Link target on click"},
+      {attr:"title",accepts:"string",def:"",desc:"Tooltip and accessibility"},
+      {attr:"usemap",accepts:"string",def:"",desc:"Reference to image map (not widely supported)"},
+      {attr:"width",accepts:"px",def:"parent width",desc:"Image width"},
+    ]},
+    {name:"mj-divider",desc:"Displays a horizontal divider.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Horizontal alignment"},
+      {attr:"border-color",accepts:"CSS color",def:"#000000",desc:"Divider color"},
+      {attr:"border-style",accepts:"string",def:"solid",desc:"CSS border style (dashed, dotted, solid)"},
+      {attr:"border-width",accepts:"px",def:"4px",desc:"Divider border width"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Inner element background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Divider padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"width",accepts:"px | %",def:"100%",desc:"Divider width"},
+    ]},
+    {name:"mj-spacer",desc:"Displays a blank vertical space.",attrs:[
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Background color of the cell"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"height",accepts:"px | %",def:"20px",desc:"Spacer height"},
+      {attr:"padding",accepts:"px | %",def:"",desc:"Spacer padding"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+    ]},
+    {name:"mj-table",desc:"Displays an HTML table. Only accepts plain HTML content.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"left",desc:"Table alignment"},
+      {attr:"border",accepts:"string",def:"none",desc:"CSS border format"},
+      {attr:"cellpadding",accepts:"px",def:"",desc:"Space between cells"},
+      {attr:"cellspacing",accepts:"px",def:"",desc:"Space within cells"},
+      {attr:"color",accepts:"CSS color",def:"#000000",desc:"Text color"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Cell background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"line-height",accepts:"px | %",def:"22px",desc:"Line height"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Table padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"role",accepts:"none | presentation",def:"",desc:"ARIA role"},
+      {attr:"table-layout",accepts:"auto | fixed | initial | inherit",def:"auto",desc:"Table layout algorithm"},
+      {attr:"width",accepts:"px | %",def:"100%",desc:"Table width"},
+    ]},
+    {name:"mj-raw",desc:"Inserts raw HTML, unprocessed by MJML. Ending tag. Can be placed in mj-head or at the root level.",attrs:[
+      {attr:"position",accepts:"file-start",def:"",desc:"When set, adds content at the very beginning of the file (before doctype). Must be at the mjml root level."},
+    ]},
+  ],
+  Hero:[
+    {name:"mj-hero",desc:"Displays a hero image section. background-height and background-width are mandatory.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"#ffffff",desc:"Hero background color (fallback)"},
+      {attr:"background-height",accepts:"px | %",def:"",desc:"Height of background image (mandatory)"},
+      {attr:"background-position",accepts:"string",def:"center center",desc:"CSS background-position"},
+      {attr:"background-url",accepts:"string (URL)",def:"null",desc:"Absolute background image URL"},
+      {attr:"background-width",accepts:"px | %",def:"parent width",desc:"Width of background image (mandatory)"},
+      {attr:"border-radius",accepts:"string",def:"",desc:"Border radius"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"height",accepts:"px | %",def:"0px",desc:"Hero height (required for fixed-height mode)"},
+      {attr:"inner-background-color",accepts:"CSS color",def:"",desc:"Content area background color"},
+      {attr:"mode",accepts:"fluid-height | fixed-height",def:"fluid-height",desc:"Hero display mode"},
+      {attr:"padding",accepts:"px | %",def:"0px",desc:"Hero padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"null",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"null",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"null",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"null",desc:"Top padding"},
+      {attr:"vertical-align",accepts:"top | middle | bottom",def:"top",desc:"Content vertical alignment"},
+    ]},
+  ],
+  Social:[
+    {name:"mj-social",desc:"Displays call-to-action buttons for social networks. Contains mj-social-element tags.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Horizontal alignment"},
+      {attr:"border-radius",accepts:"string",def:"3px",desc:"Border radius of icons"},
+      {attr:"color",accepts:"CSS color",def:"#333333",desc:"Text color"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Cell background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-style",accepts:"string",def:"normal",desc:"Font style"},
+      {attr:"font-weight",accepts:"string",def:"bold",desc:"Font weight"},
+      {attr:"icon-size",accepts:"px | %",def:"20px",desc:"Icon size"},
+      {attr:"icon-height",accepts:"px | %",def:"",desc:"Icon height (overrides icon-size if set)"},
+      {attr:"icon-padding",accepts:"px | %",def:"0px",desc:"Icon padding"},
+      {attr:"inner-padding",accepts:"px | %",def:"4px 8px",desc:"Inner padding for each element"},
+      {attr:"line-height",accepts:"px | %",def:"22px",desc:"Line height"},
+      {attr:"mode",accepts:"horizontal | vertical",def:"horizontal",desc:"Layout mode"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Component padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"text-decoration",accepts:"string",def:"none",desc:"Text decoration on links"},
+      {attr:"vertical-align",accepts:"top | middle | bottom",def:"middle",desc:"Vertical alignment"},
+    ]},
+    {name:"mj-social-element",desc:"Individual social network item inside mj-social. Ending tag.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Element alignment"},
+      {attr:"alt",accepts:"string",def:"",desc:"Alt text for the icon"},
+      {attr:"background-color",accepts:"CSS color",def:"network color",desc:"Icon background color"},
+      {attr:"border-radius",accepts:"string",def:"3px",desc:"Border radius"},
+      {attr:"color",accepts:"CSS color",def:"#333333",desc:"Text color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-style",accepts:"string",def:"normal",desc:"Font style"},
+      {attr:"font-weight",accepts:"string",def:"bold",desc:"Font weight"},
+      {attr:"href",accepts:"string (URL)",def:"",desc:"Link URL"},
+      {attr:"icon-height",accepts:"px | %",def:"icon-size",desc:"Icon height"},
+      {attr:"icon-size",accepts:"px | %",def:"20px",desc:"Icon size (width + height)"},
+      {attr:"inner-padding",accepts:"px | %",def:"4px 8px",desc:"Inner padding"},
+      {attr:"line-height",accepts:"px | %",def:"22px",desc:"Line height"},
+      {attr:"name",accepts:"string",def:"",desc:"Social network shortcut (e.g. facebook, twitter, instagram)"},
+      {attr:"padding",accepts:"px | %",def:"4px",desc:"Element padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"rel",accepts:"string",def:"",desc:"Rel attribute for the link"},
+      {attr:"src",accepts:"string (URL)",def:"network icon",desc:"Custom icon URL"},
+      {attr:"srcset",accepts:"string (URL)",def:"",desc:"Responsive icon source set"},
+      {attr:"target",accepts:"string",def:"_blank",desc:"Link target"},
+      {attr:"text-decoration",accepts:"string",def:"none",desc:"Link text decoration"},
+      {attr:"title",accepts:"string",def:"",desc:"Tooltip and accessibility"},
+      {attr:"vertical-align",accepts:"top | middle | bottom",def:"middle",desc:"Vertical alignment"},
+    ]},
+  ],
+  Navbar:[
+    {name:"mj-navbar",desc:"Navigation menu with optional hamburger mode for mobile.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Content alignment"},
+      {attr:"base-url",accepts:"string",def:"null",desc:"Base URL prepended to child links"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"hamburger",accepts:"hamburger",def:"null",desc:"Activates hamburger mode on mobile"},
+      {attr:"ico-align",accepts:"left | center | right",def:"center",desc:"Hamburger icon alignment (requires hamburger)"},
+      {attr:"ico-close",accepts:"string",def:"⊗",desc:"Char code for close icon (requires hamburger)"},
+      {attr:"ico-color",accepts:"CSS color",def:"#000000",desc:"Hamburger icon color (requires hamburger)"},
+      {attr:"ico-font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Hamburger icon font (requires hamburger)"},
+      {attr:"ico-font-size",accepts:"px | %",def:"30px",desc:"Hamburger icon size (requires hamburger)"},
+      {attr:"ico-line-height",accepts:"px | %",def:"30px",desc:"Hamburger icon line height (requires hamburger)"},
+      {attr:"ico-open",accepts:"string",def:"☰",desc:"Char code for open icon (requires hamburger)"},
+      {attr:"ico-padding",accepts:"px | %",def:"10px",desc:"Hamburger icon padding (requires hamburger)"},
+      {attr:"ico-padding-bottom",accepts:"px | %",def:"",desc:"Hamburger icon bottom padding (requires hamburger)"},
+      {attr:"ico-padding-left",accepts:"px | %",def:"",desc:"Hamburger icon left padding (requires hamburger)"},
+      {attr:"ico-padding-right",accepts:"px | %",def:"",desc:"Hamburger icon right padding (requires hamburger)"},
+      {attr:"ico-padding-top",accepts:"px | %",def:"",desc:"Hamburger icon top padding (requires hamburger)"},
+      {attr:"ico-text-decoration",accepts:"string",def:"none",desc:"Hamburger icon text decoration (requires hamburger)"},
+      {attr:"ico-text-transform",accepts:"string",def:"uppercase",desc:"Hamburger icon text transform (requires hamburger)"},
+      {attr:"padding",accepts:"px | %",def:"",desc:"Navbar padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+    ]},
+    {name:"mj-navbar-link",desc:"Individual link in a navbar. Must be inside mj-navbar. Ending tag.",attrs:[
+      {attr:"color",accepts:"CSS color",def:"#000000",desc:"Text color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-style",accepts:"string",def:"",desc:"CSS font-style"},
+      {attr:"font-weight",accepts:"string",def:"",desc:"Font weight"},
+      {attr:"href",accepts:"string (URL)",def:"",desc:"Link URL"},
+      {attr:"letter-spacing",accepts:"px | em",def:"",desc:"Letter spacing"},
+      {attr:"line-height",accepts:"px | %",def:"22px",desc:"Line height"},
+      {attr:"name",accepts:"string",def:"",desc:"Link name attribute"},
+      {attr:"padding",accepts:"px | %",def:"15px 10px",desc:"Link padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"rel",accepts:"string",def:"",desc:"Rel attribute"},
+      {attr:"target",accepts:"string",def:"",desc:"Link target"},
+      {attr:"text-decoration",accepts:"string",def:"none",desc:"Text decoration"},
+      {attr:"text-transform",accepts:"string",def:"uppercase",desc:"Text transform"},
+    ]},
+  ],
+  Accordion:[
+    {name:"mj-accordion",desc:"Interactive stacked content with collapsible tabs. Contains mj-accordion-element children.",attrs:[
+      {attr:"border",accepts:"string",def:"2px solid black",desc:"CSS border"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Cell background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"Ubuntu, Helvetica, Arial, sans-serif",desc:"Font family"},
+      {attr:"icon-align",accepts:"top | middle | bottom",def:"middle",desc:"Icon alignment"},
+      {attr:"icon-height",accepts:"px | %",def:"32px",desc:"Icon height"},
+      {attr:"icon-position",accepts:"left | right",def:"right",desc:"Icon position"},
+      {attr:"icon-unwrapped-alt",accepts:"string",def:"-",desc:"Alt text when accordion is unwrapped"},
+      {attr:"icon-unwrapped-url",accepts:"string (URL)",def:"https://i.imgur.com/w4uTygT.png",desc:"Icon URL when unwrapped"},
+      {attr:"icon-width",accepts:"px | %",def:"32px",desc:"Icon width"},
+      {attr:"icon-wrapped-alt",accepts:"string",def:"+",desc:"Alt text when accordion is wrapped"},
+      {attr:"icon-wrapped-url",accepts:"string (URL)",def:"https://i.imgur.com/bIXv1bk.png",desc:"Icon URL when wrapped"},
+      {attr:"padding",accepts:"px | %",def:"10px 25px",desc:"Accordion padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+    ]},
+    {name:"mj-accordion-element",desc:"Creates a title/text pair inside mj-accordion.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Background color"},
+      {attr:"border",accepts:"string",def:"",desc:"CSS border (affects horizontal borders except top)"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"",desc:"Font family"},
+      {attr:"icon-align",accepts:"top | middle | bottom",def:"",desc:"Icon alignment"},
+      {attr:"icon-height",accepts:"px | %",def:"32px",desc:"Icon height"},
+      {attr:"icon-position",accepts:"left | right",def:"",desc:"Icon position"},
+      {attr:"icon-unwrapped-alt",accepts:"string",def:"",desc:"Alt text when unwrapped"},
+      {attr:"icon-unwrapped-url",accepts:"string (URL)",def:"",desc:"Icon URL when unwrapped"},
+      {attr:"icon-width",accepts:"px | %",def:"32px",desc:"Icon width"},
+      {attr:"icon-wrapped-alt",accepts:"string",def:"",desc:"Alt text when wrapped"},
+      {attr:"icon-wrapped-url",accepts:"string (URL)",def:"",desc:"Icon URL when wrapped"},
+    ]},
+    {name:"mj-accordion-title",desc:"Displays the title in an accordion title/text pair. Ending tag.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Background color"},
+      {attr:"color",accepts:"CSS color",def:"",desc:"Text color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-weight",accepts:"string",def:"",desc:"Font weight"},
+      {attr:"padding",accepts:"px | %",def:"16px",desc:"Title padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+    ]},
+    {name:"mj-accordion-text",desc:"Displays the text in an accordion title/text pair. Ending tag.",attrs:[
+      {attr:"background-color",accepts:"CSS color",def:"",desc:"Background color"},
+      {attr:"color",accepts:"CSS color",def:"",desc:"Text color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"font-family",accepts:"string",def:"",desc:"Font family"},
+      {attr:"font-size",accepts:"px",def:"13px",desc:"Font size"},
+      {attr:"font-weight",accepts:"string",def:"",desc:"Font weight"},
+      {attr:"letter-spacing",accepts:"px | em",def:"",desc:"Letter spacing"},
+      {attr:"line-height",accepts:"px | %",def:"1",desc:"Line height"},
+      {attr:"padding",accepts:"px | %",def:"16px",desc:"Text padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+    ]},
+  ],
+  Carousel:[
+    {name:"mj-carousel",desc:"Displays an interactive image gallery with thumbnail navigation.",attrs:[
+      {attr:"align",accepts:"left | center | right",def:"center",desc:"Horizontal alignment"},
+      {attr:"border-radius",accepts:"px | %",def:"6px",desc:"Border radius"},
+      {attr:"container-background-color",accepts:"CSS color",def:"",desc:"Column background color"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"icon-width",accepts:"px | %",def:"44px",desc:"Width of left/right navigation icons"},
+      {attr:"left-icon",accepts:"string (URL)",def:"https://i.imgur.com/xTh3hln.png",desc:"Left navigation icon URL"},
+      {attr:"padding",accepts:"px | %",def:"",desc:"Carousel padding (up to 4 values)"},
+      {attr:"padding-bottom",accepts:"px | %",def:"",desc:"Bottom padding"},
+      {attr:"padding-left",accepts:"px | %",def:"",desc:"Left padding"},
+      {attr:"padding-right",accepts:"px | %",def:"",desc:"Right padding"},
+      {attr:"padding-top",accepts:"px | %",def:"",desc:"Top padding"},
+      {attr:"right-icon",accepts:"string (URL)",def:"https://i.imgur.com/os7o9kz.png",desc:"Right navigation icon URL"},
+      {attr:"tb-border",accepts:"string",def:"2px solid transparent",desc:"Thumbnail border"},
+      {attr:"tb-border-radius",accepts:"px | %",def:"6px",desc:"Thumbnail border radius"},
+      {attr:"tb-hover-border-color",accepts:"CSS color",def:"#fead0d",desc:"Hovered thumbnail border color"},
+      {attr:"tb-selected-border-color",accepts:"CSS color",def:"#ccc",desc:"Selected thumbnail border color"},
+      {attr:"tb-width",accepts:"px | %",def:"",desc:"Thumbnail width"},
+      {attr:"thumbnails",accepts:"visible | hidden | supported",def:"hidden",desc:"Thumbnail display mode"},
+    ]},
+    {name:"mj-carousel-image",desc:"Individual image inside mj-carousel. Ending tag.",attrs:[
+      {attr:"alt",accepts:"string",def:"''",desc:"Image alt text"},
+      {attr:"border-radius",accepts:"px | %",def:"",desc:"Main image border radius"},
+      {attr:"css-class",accepts:"string",def:"",desc:"Class added to root HTML element"},
+      {attr:"href",accepts:"string (URL)",def:"",desc:"Link URL on click"},
+      {attr:"rel",accepts:"string",def:"",desc:"Rel attribute"},
+      {attr:"src",accepts:"string (URL)",def:"",desc:"Image source URL"},
+      {attr:"target",accepts:"string",def:"_blank",desc:"Link target"},
+      {attr:"tb-border",accepts:"string",def:"",desc:"Thumbnail border (CSS border format)"},
+      {attr:"tb-border-radius",accepts:"px | %",def:"",desc:"Thumbnail border radius"},
+      {attr:"thumbnails-src",accepts:"string (URL)",def:"",desc:"Custom thumbnail image URL"},
+      {attr:"title",accepts:"string",def:"",desc:"Tooltip and accessibility"},
+    ]},
+  ],
+};
+
+// Build a flat lookup: name -> comp object (for copy)
+const compMap = {};
+for(const comps of Object.values(data)){
+  for(const c of comps) compMap[c.name] = c;
+}
+
+const cats = ["All", ...Object.keys(data)];
+let activeCategory = "All";
+const expanded = {};
+const copyTimers = {};
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function buildTabs(){
+  const el = document.getElementById("tabs");
+  el.innerHTML = cats.map(c =>
+    `<button class="tab-btn${c===activeCategory?' active':''}" onclick="setCategory('${c}')">${c}</button>`
+  ).join("");
+}
+
+function setCategory(c){ activeCategory=c; render(); }
+
+function copyJSON(name, btnEl){
+  const comp = compMap[name];
+  if(!comp) return;
+  const payload = {
+    component: comp.name,
+    attributes: comp.attrs.map(a => ({
+      attribute: a.attr,
+      accepts: a.accepts,
+      default: a.def || null,
+      description: a.desc
+    }))
+  };
+  const json = JSON.stringify(payload, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    btnEl.textContent = "Copied!";
+    btnEl.classList.add("copied");
+    clearTimeout(copyTimers[name]);
+    copyTimers[name] = setTimeout(() => {
+      btnEl.textContent = "Copy JSON";
+      btnEl.classList.remove("copied");
+    }, 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = json;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta);
+    btnEl.textContent = "Copied!";
+    btnEl.classList.add("copied");
+    clearTimeout(copyTimers[name]);
+    copyTimers[name] = setTimeout(() => {
+      btnEl.textContent = "Copy JSON";
+      btnEl.classList.remove("copied");
+    }, 2000);
+  });
+}
+
+function copyAll(btnEl){
+  // Collect unique attributes across all components, track which components use each
+  const attrMap = {}; // key = attr name -> {accepts, default, description, components[]}
+  for(const [cat, comps] of Object.entries(data)){
+    for(const comp of comps){
+      for(const a of comp.attrs){
+        if(!attrMap[a.attr]){
+          attrMap[a.attr] = {
+            attribute: a.attr,
+            accepts: a.accepts,
+            default: a.def || null,
+            description: a.desc,
+            components: []
+          };
+        }
+        if(!attrMap[a.attr].components.includes(comp.name)){
+          attrMap[a.attr].components.push(comp.name);
+        }
+      }
+    }
+  }
+
+  const uniqueAttrs = Object.values(attrMap).sort((a,b)=>a.attribute.localeCompare(b.attribute));
+
+  const payload = {
+    summary: {
+      total_unique_attributes: uniqueAttrs.length,
+      total_components: Object.values(data).reduce((s,c)=>s+c.length,0)
+    },
+    attributes: uniqueAttrs
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+  navigator.clipboard.writeText(json).then(()=>flashBtn(btnEl)).catch(()=>{
+    const ta=document.createElement("textarea");
+    ta.value=json; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta); flashBtn(btnEl);
+  });
+}
+
+function flashBtn(btnEl){
+  const orig = btnEl.textContent;
+  btnEl.textContent="Copied!";
+  btnEl.style.background="rgba(22,163,74,0.85)";
+  btnEl.style.borderColor="rgba(22,163,74,0.9)";
+  setTimeout(()=>{
+    btnEl.textContent=orig;
+    btnEl.style.background="rgba(255,255,255,0.12)";
+    btnEl.style.borderColor="rgba(255,255,255,0.4)";
+  },2000);
+}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+  buildTabs();
+  const main = document.getElementById("main");
+  let html = "";
+  let any = false;
+
+  for(const [cat, comps] of Object.entries(data)){
+    if(activeCategory!=="All" && activeCategory!==cat) continue;
+    const matched = comps.filter(c =>
+      c.name.includes(q) ||
+      c.desc.toLowerCase().includes(q) ||
+      c.attrs.some(a => a.attr.includes(q) || a.desc.toLowerCase().includes(q))
+    );
+    if(!matched.length) continue;
+    any = true;
+    html += `<div class="cat-section"><h2 class="cat-label">${cat}</h2>`;
+    for(const comp of matched){
+      const key = comp.name;
+      const open = !!expanded[key];
+      html += `
+      <div class="comp-card">
+        <button class="comp-header" onclick="toggle('${key}')">
+          <span class="comp-name">&lt;${esc(comp.name)}&gt;</span>
+          <span class="cat-tag">${cat}</span>
+          ${comp.attrs.length ? `<span class="attr-count">${comp.attrs.length} attributes</span>` : ''}
+          <span class="spacer"></span>
+          <button class="copy-btn" onclick="event.stopPropagation();copyJSON('${esc(comp.name)}',this)">Copy JSON</button>
+          <span class="chevron">${open?"▲":"▼"}</span>
+        </button>
+        <div class="comp-desc">${esc(comp.desc)}</div>`;
+      if(open){
+        if(comp.attrs.length){
+          html += `<div class="attr-table-wrap"><table>
+            <thead><tr><th>Attribute</th><th>Accepts</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>`;
+          comp.attrs.forEach(a => {
+            html += `<tr>
+              <td class="attr-name">${esc(a.attr)}</td>
+              <td class="attr-accepts">${esc(a.accepts)}</td>
+              <td>${a.def ? `<code class="def">${esc(a.def)}</code>` : `<span style="color:#d1d5db">—</span>`}</td>
+              <td style="color:#4b5563">${esc(a.desc)}</td>
+            </tr>`;
+          });
+          html += `</tbody></table></div>`;
+        } else {
+          html += `<div class="empty-attrs">No attributes — content is its text/HTML child node.</div>`;
+        }
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  if(!any) html = `<div class="no-results">No components found for "${esc(q)}"</div>`;
+  main.innerHTML = html;
+}
+
+function toggle(key){
+  expanded[key] = !expanded[key];
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

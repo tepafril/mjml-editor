@@ -14,6 +14,7 @@ import SelectionBox from '@/components/canvas/SelectionBox.vue'
 import DropZoneIndicator from '@/components/canvas/DropZoneIndicator.vue'
 import DragGhost from '@/components/canvas/DragGhost.vue'
 
+
 const editorStore = useEditorStore()
 const previewStore = usePreviewStore()
 const dragStore = useDragStore()
@@ -36,6 +37,8 @@ const dropIndicatorWidth = ref(0)
 // Resolved drop target
 const resolvedDropParentId = ref<string | null>(null)
 const resolvedDropIndex = ref(0)
+
+const bodyWidth = computed(() => editorStore.tree.props['width'] || '600px')
 
 function getIframeOffset(): { top: number; left: number } {
   if (!canvasRef.value) return { top: 0, left: 0 }
@@ -93,7 +96,7 @@ function onIframeReady(doc: Document) {
   // Hide selection boxes before attempting FLIP
   selectedRect.value = null
   hoveredRect.value = null
-  playFlipAnimation(doc, updateSelectionRects)
+  playFlipAnimation(doc)
   // If no FLIP was pending, playFlipAnimation returns immediately without setting isAnimating
   if (!isAnimating.value) {
     setTimeout(updateSelectionRects, 100)
@@ -124,6 +127,54 @@ const selectedNodeDraggable = computed(() => {
   const node = treeUtils.findById(editorStore.tree, editorStore.selectedId)
   return node ? node.type !== 'mj-body' : false
 })
+
+// Selected node's index in parent for move up/down
+const selectedNodeParentInfo = computed(() => {
+  if (!editorStore.selectedId) return null
+  const parent = treeUtils.findParent(editorStore.tree, editorStore.selectedId)
+  if (!parent) return null
+  const index = parent.children.findIndex(c => c.id === editorStore.selectedId)
+  if (index === -1) return null
+  return { parent, index, total: parent.children.length }
+})
+
+const canMoveUp = computed(() => {
+  const info = selectedNodeParentInfo.value
+  return info ? info.index > 0 : false
+})
+
+const canMoveDown = computed(() => {
+  const info = selectedNodeParentInfo.value
+  return info ? info.index < info.total - 1 : false
+})
+
+function onMoveUp() {
+  const info = selectedNodeParentInfo.value
+  if (!info || !editorStore.selectedId) return
+  if (iframeDoc.value) {
+    captureBeforeMove(iframeDoc.value, editorStore.selectedId)
+  }
+  editorStore.moveNode(editorStore.selectedId, info.parent.id, info.index - 1)
+}
+
+function onMoveDown() {
+  const info = selectedNodeParentInfo.value
+  if (!info || !editorStore.selectedId) return
+  if (iframeDoc.value) {
+    captureBeforeMove(iframeDoc.value, editorStore.selectedId)
+  }
+  editorStore.moveNode(editorStore.selectedId, info.parent.id, info.index + 1)
+}
+
+function onDuplicateSelected() {
+  if (!editorStore.selectedId) return
+  editorStore.duplicateNode(editorStore.selectedId)
+}
+
+function onDeleteSelected() {
+  if (!editorStore.selectedId) return
+  editorStore.removeNode(editorStore.selectedId)
+}
 
 // --- Pointer-based drag for existing nodes ---
 const isPointerDragging = ref(false)
@@ -384,10 +435,11 @@ onUnmounted(() => {
     <div
       v-else
       class="h-full flex justify-center"
+      :class="[previewStore.mode === 'desktop' ? 'p-8' : 'py-8']"
     >
       <div
-        class="h-full transition-all duration-300 bg-white shadow-sm"
-        :style="{ width: previewStore.canvasWidth, maxWidth: '100%' }"
+        class="h-full transition-all duration-300 shadow-sm"
+        :style="{ width: previewStore.canvasWidth, maxWidth: `${bodyWidth}` }"
       >
         <CanvasIframe
           :html="compiledHtml"
@@ -425,7 +477,13 @@ onUnmounted(() => {
       :rect="selectedRect"
       type="selected"
       :draggable="selectedNodeDraggable"
+      :canMoveUp="canMoveUp"
+      :canMoveDown="canMoveDown"
       @dragStart="onSelectionDragStart"
+      @moveUp="onMoveUp"
+      @moveDown="onMoveDown"
+      @duplicate="onDuplicateSelected"
+      @delete="onDeleteSelected"
     >
       <template #label>{{ selectedNodeType?.replace('mj-', '') }}</template>
     </SelectionBox>
