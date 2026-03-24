@@ -11,8 +11,10 @@ export function useMjmlCompiler() {
   const headStore = useHeadStore()
   const compiledHtml = ref('')
   const compileError = ref<string | null>(null)
+  const paused = ref(false)
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  let pendingCompile = false
 
   function compile() {
     try {
@@ -26,10 +28,26 @@ export function useMjmlCompiler() {
     }
   }
 
+  function pause() {
+    paused.value = true
+  }
+
+  function resume() {
+    paused.value = false
+    if (pendingCompile) {
+      pendingCompile = false
+      compile()
+    }
+  }
+
   watch(
     [() => JSON.stringify(editorStore.tree), () => JSON.stringify(headStore.settings)],
     () => {
       if (debounceTimer) clearTimeout(debounceTimer)
+      if (paused.value) {
+        pendingCompile = true
+        return
+      }
       debounceTimer = setTimeout(compile, 150)
     },
     { immediate: true }
@@ -37,5 +55,5 @@ export function useMjmlCompiler() {
 
   const mjmlSource = computed(() => buildFullMjml(editorStore.tree, headStore.settings))
 
-  return { compiledHtml, compileError, mjmlSource }
+  return { compiledHtml, compileError, mjmlSource, pause, resume }
 }

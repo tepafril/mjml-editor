@@ -76,18 +76,6 @@ export function useFlipAnimation() {
       )
     })
 
-    // Highlight the moved node
-    const movedEl = doc.querySelector(`.node-${flip.movedNodeId}`) as HTMLElement | null
-    if (movedEl) {
-      movedEl.animate(
-        [
-          { outline: '3px solid rgba(99, 102, 241, 0.5)', outlineOffset: '0px' },
-          { outline: '3px solid rgba(99, 102, 241, 0)', outlineOffset: '4px' },
-        ],
-        { duration: 600, easing: 'ease-out' },
-      )
-    }
-
     pendingFlip.value = null
 
     // Signal animation end after DURATION, then fire callback

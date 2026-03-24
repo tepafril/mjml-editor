@@ -21,12 +21,16 @@ export type NodeType =
   | 'mj-table'
   | 'mj-raw'
   // Phase 4
-  | 'mj-carousel'
-  | 'mj-carousel-image'
   | 'mj-accordion'
   | 'mj-accordion-element'
   | 'mj-accordion-title'
   | 'mj-accordion-text'
+
+export interface TemplateLogic {
+  foreach?: string
+  foreachAs?: string
+  if?: string
+}
 
 export interface EditorNode {
   id: string
@@ -37,6 +41,7 @@ export interface EditorNode {
   locked?: boolean
   hidden?: boolean
   label?: string
+  templateLogic?: TemplateLogic
 }
 
 export const LEAF_TYPES: NodeType[] = [
@@ -51,7 +56,6 @@ export const LEAF_TYPES: NodeType[] = [
   'mj-navbar-link',
   'mj-table',
   'mj-raw',
-  'mj-carousel-image',
   'mj-accordion-title',
   'mj-accordion-text',
 ]
@@ -64,12 +68,11 @@ export const ALLOWED_CHILDREN: Record<NodeType, NodeType[]> = {
   'mj-column': [
     'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
     'mj-divider', 'mj-spacer', 'mj-social', 'mj-navbar', 'mj-table',
-    'mj-raw', 'mj-carousel', 'mj-accordion',
+    'mj-raw', 'mj-accordion',
   ],
   'mj-hero': ['mj-text', 'mj-heading', 'mj-button', 'mj-image'],
   'mj-social': ['mj-social-element'],
   'mj-navbar': ['mj-navbar-link'],
-  'mj-carousel': ['mj-carousel-image'],
   'mj-accordion': ['mj-accordion-element'],
   'mj-accordion-element': ['mj-accordion-title', 'mj-accordion-text'],
   // Leaf types
@@ -84,7 +87,6 @@ export const ALLOWED_CHILDREN: Record<NodeType, NodeType[]> = {
   'mj-navbar-link': [],
   'mj-table': [],
   'mj-raw': [],
-  'mj-carousel-image': [],
   'mj-accordion-title': [],
   'mj-accordion-text': [],
 }

@@ -7,7 +7,8 @@ import UnitInput from '@/components/ui/UnitInput.vue'
 import ColorPicker from '@/components/ui/ColorPicker.vue'
 import AlignmentToggle from '@/components/ui/AlignmentToggle.vue'
 import SpacingControl from './SpacingControl.vue'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { Plus, Trash2, Repeat, GitBranch, Braces } from 'lucide-vue-next'
+import VariablePicker from './VariablePicker.vue'
 
 const editorStore = useEditorStore()
 const node = computed(() => editorStore.selectedNode)
@@ -24,10 +25,11 @@ const HAS_TEXT_STYLES = new Set<string>([
 ])
 const HAS_ALIGN = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
-  'mj-social', 'mj-navbar', 'mj-carousel',
+  'mj-social', 'mj-navbar',
 ])
-const HAS_SRC = new Set<string>(['mj-image', 'mj-avatar', 'mj-carousel-image'])
-const HAS_HREF = new Set<string>(['mj-button', 'mj-navbar-link', 'mj-social-element', 'mj-carousel-image'])
+
+const HAS_SRC = new Set<string>(['mj-image', 'mj-avatar'])
+const HAS_HREF = new Set<string>(['mj-button', 'mj-navbar-link', 'mj-social-element'])
 const HAS_BG_URL = new Set<string>(['mj-wrapper', 'mj-hero', 'mj-section'])
 const HAS_PADDING = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
@@ -38,7 +40,7 @@ const HAS_PADDING = new Set<string>([
 
 // Compound types that can have children added
 const CAN_ADD_CHILD = new Set<string>([
-  'mj-social', 'mj-navbar', 'mj-carousel', 'mj-accordion',
+  'mj-social', 'mj-navbar', 'mj-accordion',
 ])
 
 const SOCIAL_NETWORKS = [
@@ -69,12 +71,26 @@ function removeChild(childId: string) {
   editorStore.removeNode(childId)
 }
 
+const HAS_FOREACH = new Set<string>([
+  'mj-section', 'mj-column', 'mj-wrapper', 'mj-group',
+])
+
+function insertVariable(variable: string) {
+  if (!node.value) return
+  const current = node.value.content || ''
+  editorStore.updateNodeContent(node.value.id, current + variable)
+}
+
+function updateTemplateLogic(key: string, value: string) {
+  if (!node.value) return
+  editorStore.updateNodeTemplateLogic(node.value.id, { [key]: value })
+}
+
 const childTypeName = computed(() => {
   if (!node.value) return ''
   const map: Record<string, string> = {
     'mj-social': 'social link',
     'mj-navbar': 'nav link',
-    'mj-carousel': 'slide',
     'mj-accordion': 'item',
   }
   return map[node.value.type] || 'child'
@@ -93,7 +109,10 @@ const childTypeName = computed(() => {
 
     <!-- Content (text) -->
     <div v-if="HAS_CONTENT.has(node.type)">
-      <label class="text-xs text-gray-500 mb-1 block">Content</label>
+      <div class="flex items-center justify-between mb-1">
+        <label class="text-xs text-gray-500">Content</label>
+        <VariablePicker @insert="insertVariable" />
+      </div>
       <textarea
         :value="node.content || ''"
         @input="updateContent(($event.target as HTMLTextAreaElement).value)"
@@ -384,6 +403,52 @@ const childTypeName = computed(() => {
         <option value="middle">Middle</option>
         <option value="bottom">Bottom</option>
       </select>
+    </div>
+
+    <!-- Template Logic -->
+    <div v-if="node.type !== 'mj-body'" class="space-y-2">
+      <label class="text-xs text-gray-500 font-medium flex items-center gap-1">
+        <Braces class="w-3 h-3" /> Template Logic
+      </label>
+      <div class="bg-amber-50 border border-amber-200 rounded-md p-2 space-y-2">
+        <!-- foreach -->
+        <div v-if="HAS_FOREACH.has(node.type)">
+          <label class="text-[10px] text-amber-700 mb-0.5 flex items-center gap-1">
+            <Repeat class="w-3 h-3" /> Loop (foreach)
+          </label>
+          <input
+            :value="node.templateLogic?.foreach || ''"
+            @input="updateTemplateLogic('foreach', ($event.target as HTMLInputElement).value)"
+            placeholder="e.g. contacts"
+            class="w-full px-2 py-1 text-xs border border-amber-200 rounded bg-white
+                   focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200
+                   placeholder:text-gray-300"
+          />
+          <input
+            v-if="node.templateLogic?.foreach"
+            :value="node.templateLogic?.foreachAs || ''"
+            @input="updateTemplateLogic('foreachAs', ($event.target as HTMLInputElement).value)"
+            placeholder="Loop variable (e.g. contact)"
+            class="w-full px-2 py-1 text-xs border border-amber-200 rounded bg-white mt-1
+                   focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200
+                   placeholder:text-gray-300"
+          />
+        </div>
+        <!-- if -->
+        <div>
+          <label class="text-[10px] text-amber-700 mb-0.5 flex items-center gap-1">
+            <GitBranch class="w-3 h-3" /> Condition (if)
+          </label>
+          <input
+            :value="node.templateLogic?.if || ''"
+            @input="updateTemplateLogic('if', ($event.target as HTMLInputElement).value)"
+            placeholder="e.g. contact.first_name == 'tep'"
+            class="w-full px-2 py-1 text-xs border border-amber-200 rounded bg-white
+                   focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200
+                   placeholder:text-gray-300"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Compound children management -->

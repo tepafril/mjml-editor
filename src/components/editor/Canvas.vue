@@ -18,7 +18,7 @@ import DragGhost from '@/components/canvas/DragGhost.vue'
 const editorStore = useEditorStore()
 const previewStore = usePreviewStore()
 const dragStore = useDragStore()
-const { compiledHtml, mjmlSource } = useMjmlCompiler()
+const { compiledHtml, mjmlSource, pause: pauseCompiler, resume: resumeCompiler } = useMjmlCompiler()
 const { onDragEnd } = useDragDrop()
 const { captureBeforeMove, playFlipAnimation, cancelFlip, isAnimating } = useFlipAnimation()
 
@@ -26,7 +26,7 @@ const iframeDoc = ref<Document | null>(null)
 const canvasRef = ref<HTMLElement>()
 
 const selectedRect = ref<{ top: number; left: number; width: number; height: number } | null>(null)
-const hoveredRect = ref<{ top: number; left: number; width: number; height: number } | null>(null)
+const hoveredRects = ref<{ top: number; left: number; width: number; height: number }[]>([])
 
 // Drop indicator state
 const dropIndicatorVisible = ref(false)
@@ -37,6 +37,7 @@ const dropIndicatorWidth = ref(0)
 // Resolved drop target
 const resolvedDropParentId = ref<string | null>(null)
 const resolvedDropIndex = ref(0)
+const resolvedAutoWrap = ref(false) // true when dropping onto body needs auto-wrap
 
 const bodyWidth = computed(() => editorStore.tree.props['width'] || '600px')
 
@@ -77,13 +78,25 @@ function updateSelectionRects() {
   }
 
   if (editorStore.hoveredId && editorStore.hoveredId !== editorStore.selectedId) {
-    hoveredRect.value = getNodeRect(editorStore.hoveredId)
+    const ids = [editorStore.hoveredId, ...treeUtils.getAncestorIds(editorStore.tree, editorStore.hoveredId)]
+    hoveredRects.value = ids
+      .filter(id => id !== editorStore.selectedId && id !== editorStore.tree.id)
+      .map(id => getNodeRect(id))
+      .filter((r): r is NonNullable<typeof r> => r !== null)
   } else {
-    hoveredRect.value = null
+    hoveredRects.value = []
   }
 }
 
 watch([() => editorStore.selectedId, () => editorStore.hoveredId], updateSelectionRects)
+watch(() => previewStore.mode, (mode) => {
+  if (mode === 'mjml-source') {
+    selectedRect.value = null
+    hoveredRects.value = []
+  } else {
+    setTimeout(updateSelectionRects, 300)
+  }
+})
 watch(compiledHtml, () => {
   // Don't update rects mid-animation — onIframeReady handles it after FLIP completes
   if (!isAnimating.value) {
@@ -95,8 +108,10 @@ function onIframeReady(doc: Document) {
   iframeDoc.value = doc
   // Hide selection boxes before attempting FLIP
   selectedRect.value = null
-  hoveredRect.value = null
-  playFlipAnimation(doc)
+  hoveredRects.value = []
+  playFlipAnimation(doc, () => {
+    updateSelectionRects()
+  })
   // If no FLIP was pending, playFlipAnimation returns immediately without setting isAnimating
   if (!isAnimating.value) {
     setTimeout(updateSelectionRects, 100)
@@ -104,6 +119,7 @@ function onIframeReady(doc: Document) {
 }
 
 function onNodeClick(nodeId: string) {
+  // If editing a different node, the blur on the contenteditable will handle stopping
   editorStore.selectNode(nodeId)
 }
 
@@ -120,6 +136,27 @@ const selectedNodeType = computed(() => {
   const node = treeUtils.findById(editorStore.tree, editorStore.selectedId)
   return node?.type || null
 })
+
+// Build a nodeId -> nodeType map for the iframe to check inline-editable types
+const nodeTypeMap = computed(() => {
+  const map: Record<string, string> = {}
+  for (const node of treeUtils.flatten(editorStore.tree)) {
+    map[node.id] = node.type
+  }
+  return map
+})
+
+function onEditStart(nodeId: string) {
+  editorStore.selectNode(nodeId)
+  editorStore.startEditing(nodeId)
+  pauseCompiler()
+}
+
+function onEditEnd(nodeId: string, content: string) {
+  editorStore.updateNodeContent(nodeId, content)
+  editorStore.stopEditing()
+  resumeCompiler()
+}
 
 // Can the selected node be dragged? (not mj-body)
 const selectedNodeDraggable = computed(() => {
@@ -278,12 +315,16 @@ function resolveDropTarget(clientX: number, clientY: number) {
 
   if (validParents.length === 0) return
 
+  resolvedAutoWrap.value = false
+
   // For each valid parent, find its element in the iframe and check if mouse is within
-  let bestParent = validParents[0]
+  let bestParent: typeof validParents[0] | null = null
   let bestDistance = Infinity
 
   for (const parent of validParents) {
-    const el = iframeDoc.value!.querySelector(`.node-${parent.id}`)
+    const el = parent.type === 'mj-body'
+      ? iframeDoc.value!.body
+      : iframeDoc.value!.querySelector(`.node-${parent.id}`)
     if (!el) continue
     const rect = el.getBoundingClientRect()
 
@@ -301,7 +342,60 @@ function resolveDropTarget(clientX: number, clientY: number) {
     }
   }
 
-  // If nothing matched geometrically, fall back to first valid parent
+  // Mouse is not inside any valid parent — try auto-wrap at body level
+  if (!bestParent && source.nodeType) {
+    const columnChildren = ALLOWED_CHILDREN['mj-column']
+    const sectionChildren = ALLOWED_CHILDREN['mj-section']
+    const canAutoWrap = columnChildren.includes(draggedType) || sectionChildren.includes(draggedType)
+
+    if (canAutoWrap) {
+      resolvedDropParentId.value = editorStore.tree.id
+      resolvedAutoWrap.value = true
+
+      const bodyChildren = editorStore.tree.children.filter(c => !c.hidden && c.id !== source.nodeId)
+      let dropIdx = bodyChildren.length
+
+      for (let i = 0; i < bodyChildren.length; i++) {
+        const childEl = iframeDoc.value!.querySelector(`.node-${bodyChildren[i].id}`)
+        if (!childEl) continue
+        const childRect = childEl.getBoundingClientRect()
+        const midY = childRect.top + childRect.height / 2
+        if (iframeY < midY) {
+          dropIdx = i
+          break
+        }
+      }
+
+      resolvedDropIndex.value = dropIdx
+
+      const offset = getIframeOffset()
+      if (dropIdx < bodyChildren.length) {
+        const childEl = iframeDoc.value!.querySelector(`.node-${bodyChildren[dropIdx].id}`)
+        if (childEl) {
+          const childRect = childEl.getBoundingClientRect()
+          dropIndicatorY.value = childRect.top + offset.top - 1
+          dropIndicatorX.value = childRect.left + offset.left
+          dropIndicatorWidth.value = childRect.width
+        }
+      } else if (bodyChildren.length > 0) {
+        const lastChild = bodyChildren[bodyChildren.length - 1]
+        const lastEl = iframeDoc.value!.querySelector(`.node-${lastChild.id}`)
+        if (lastEl) {
+          const lastRect = lastEl.getBoundingClientRect()
+          dropIndicatorY.value = lastRect.bottom + offset.top + 1
+          dropIndicatorX.value = lastRect.left + offset.left
+          dropIndicatorWidth.value = lastRect.width
+        }
+      }
+      dropIndicatorVisible.value = true
+      return
+    }
+
+    // No auto-wrap possible, fall back to first valid parent
+    bestParent = validParents[0]
+  }
+
+  if (!bestParent) bestParent = validParents[0]
   resolvedDropParentId.value = bestParent.id
 
   // Calculate drop index among children (skip the dragged node itself)
@@ -323,7 +417,9 @@ function resolveDropTarget(clientX: number, clientY: number) {
 
   // Position the drop indicator
   const offset = getIframeOffset()
-  const parentEl = iframeDoc.value!.querySelector(`.node-${bestParent.id}`)
+  const parentEl = bestParent.type === 'mj-body'
+    ? iframeDoc.value!.body
+    : iframeDoc.value!.querySelector(`.node-${bestParent.id}`)
   if (parentEl) {
     const parentRect = parentEl.getBoundingClientRect()
 
@@ -366,30 +462,81 @@ function handleOverlayDragOver(e: DragEvent) {
   resolveDropTarget(e.clientX, e.clientY)
 }
 
+/**
+ * Auto-wrap a component in the required parent structure.
+ * E.g. dropping mj-text onto body creates: section > column > text
+ */
+function autoWrapAndInsert(nodeType: NodeType, index: number): string | null {
+  const columnChildren = ALLOWED_CHILDREN['mj-column']
+  const sectionChildren = ALLOWED_CHILDREN['mj-section']
+  const bodyChildren = ALLOWED_CHILDREN['mj-body']
+
+  // Component that belongs in a column (text, button, image, etc.)
+  if (columnChildren.includes(nodeType)) {
+    const contentNode = createNode(nodeType)
+    const column = createNode('mj-column', { children: [contentNode] })
+    const section = createNode('mj-section', { children: [column] })
+    editorStore.insertNode(section, editorStore.tree.id, index)
+    return contentNode.id
+  }
+
+  // Column being dropped onto body — wrap in section
+  if (sectionChildren.includes(nodeType)) {
+    const column = createNode(nodeType)
+    const section = createNode('mj-section', { children: [column] })
+    editorStore.insertNode(section, editorStore.tree.id, index)
+    return column.id
+  }
+
+  // Section-level component dropped onto body — insert directly
+  if (bodyChildren.includes(nodeType)) {
+    const node = createNode(nodeType)
+    editorStore.insertNode(node, editorStore.tree.id, index)
+    return node.id
+  }
+
+  return null
+}
+
 function handleOverlayDrop(e: DragEvent) {
   e.preventDefault()
   e.stopPropagation()
 
-  if (!resolvedDropParentId.value || !dragStore.dragSource) {
+  const source = dragStore.dragSource
+  if (!source) {
     dragStore.endDrag()
     return
   }
 
-  const source = dragStore.dragSource
-
-  if (source.nodeType) {
-    const newNode = createNode(source.nodeType as NodeType)
-    editorStore.insertNode(newNode, resolvedDropParentId.value, resolvedDropIndex.value)
-    editorStore.selectNode(newNode.id)
-  } else if (source.nodeId) {
-    if (iframeDoc.value) {
-      captureBeforeMove(iframeDoc.value, source.nodeId)
+  if (resolvedAutoWrap.value && source.nodeType) {
+    // Auto-wrap: drop onto body with section > column wrapper
+    const insertedId = autoWrapAndInsert(source.nodeType as NodeType, resolvedDropIndex.value)
+    if (insertedId) {
+      editorStore.selectNode(insertedId)
     }
-    editorStore.moveNode(source.nodeId, resolvedDropParentId.value, resolvedDropIndex.value)
+  } else if (resolvedDropParentId.value) {
+    // Normal drop — valid parent found
+    if (source.nodeType) {
+      const newNode = createNode(source.nodeType as NodeType)
+      editorStore.insertNode(newNode, resolvedDropParentId.value, resolvedDropIndex.value)
+      editorStore.selectNode(newNode.id)
+    } else if (source.nodeId) {
+      if (iframeDoc.value) {
+        captureBeforeMove(iframeDoc.value, source.nodeId)
+      }
+      editorStore.moveNode(source.nodeId, resolvedDropParentId.value, resolvedDropIndex.value)
+    }
+  } else if (source.nodeType) {
+    // Fallback: no resolved target at all — auto-wrap at end
+    const insertedId = autoWrapAndInsert(source.nodeType as NodeType, editorStore.tree.children.length)
+    if (insertedId) {
+      editorStore.selectNode(insertedId)
+    }
   }
 
   dropIndicatorVisible.value = false
   resolvedDropParentId.value = null
+  resolvedAutoWrap.value = false
   dragStore.endDrag()
 }
 
@@ -425,6 +572,7 @@ onUnmounted(() => {
   <div
     ref="canvasRef"
     class="relative flex-1 bg-gray-100 overflow-auto"
+    @click.self="editorStore.selectNode(null)"
   >
     <!-- MJML Source view -->
     <div v-if="previewStore.mode === 'mjml-source'" class="h-full overflow-auto p-4">
@@ -436,6 +584,7 @@ onUnmounted(() => {
       v-else
       class="h-full flex justify-center"
       :class="[previewStore.mode === 'desktop' ? 'p-8' : 'py-8']"
+      @click.self="editorStore.selectNode(null)"
     >
       <div
         class="h-full transition-all duration-300 shadow-sm"
@@ -443,10 +592,14 @@ onUnmounted(() => {
       >
         <CanvasIframe
           :html="compiledHtml"
+          :editingNodeId="editorStore.editingNodeId"
+          :nodeTypes="nodeTypeMap"
           @nodeClick="onNodeClick"
           @nodeHover="onNodeHover"
           @iframeClick="onIframeClick"
           @ready="onIframeReady"
+          @editStart="onEditStart"
+          @editEnd="onEditEnd"
         />
       </div>
     </div>
@@ -472,8 +625,9 @@ onUnmounted(() => {
       :width="dropIndicatorWidth"
     />
 
-    <!-- Selection overlays -->
+    <!-- Selection overlays (hide during inline editing or source view) -->
     <SelectionBox
+      v-if="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source'"
       :rect="selectedRect"
       type="selected"
       :draggable="selectedNodeDraggable"
@@ -487,7 +641,13 @@ onUnmounted(() => {
     >
       <template #label>{{ selectedNodeType?.replace('mj-', '') }}</template>
     </SelectionBox>
-    <SelectionBox :rect="hoveredRect" type="hovered" />
+    <SelectionBox
+      v-for="(rect, i) in hoveredRects"
+      v-show="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source'"
+      :key="i"
+      :rect="rect"
+      type="hovered"
+    />
 
     <!-- Drag ghost -->
     <DragGhost />

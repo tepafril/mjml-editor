@@ -47,13 +47,6 @@ export function createNode(type: NodeType, overrides?: Partial<EditorNode>): Edi
           createNode('mj-navbar-link', { content: 'Contact' }),
         ]
         break
-      case 'mj-carousel':
-        node.children = [
-          createNode('mj-carousel-image'),
-          createNode('mj-carousel-image', { props: { ...NODE_DEFAULT_PROPS['mj-carousel-image'], src: 'https://via.placeholder.com/600x300/4A90D9/ffffff' } }),
-          createNode('mj-carousel-image', { props: { ...NODE_DEFAULT_PROPS['mj-carousel-image'], src: 'https://via.placeholder.com/600x300/E85034/ffffff' } }),
-        ]
-        break
       case 'mj-accordion':
         node.children = [
           createNode('mj-accordion-element', {

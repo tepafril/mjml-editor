@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PropsPanel from '@/components/panels/PropsPanel.vue'
-import EmailSettingsPanel from '@/components/panels/EmailSettingsPanel.vue'
+import LayerTree from '@/components/panels/LayerTree.vue'
 
-const activeTab = ref<'properties' | 'settings'>('properties')
+const activeTab = ref<'properties' | 'layers'>('properties')
 </script>
 
 <template>
@@ -11,7 +11,7 @@ const activeTab = ref<'properties' | 'settings'>('properties')
     <!-- Tabs -->
     <div class="flex border-b border-gray-200 shrink-0">
       <button
-        v-for="tab in (['properties', 'settings'] as const)"
+        v-for="tab in (['properties', 'layers'] as const)"
         :key="tab"
         class="flex-1 py-2 text-xs font-medium text-center transition-colors capitalize"
         :class="activeTab === tab
@@ -26,7 +26,7 @@ const activeTab = ref<'properties' | 'settings'>('properties')
     <!-- Content -->
     <div class="flex-1 overflow-y-auto">
       <PropsPanel v-if="activeTab === 'properties'" />
-      <EmailSettingsPanel v-else />
+      <LayerTree v-else />
     </div>
   </div>
 </template>

@@ -5,8 +5,8 @@ import type { NodeType } from '@/types/node.types'
 import {
   Type, Heading, MousePointer, Image, User,
   Minus, ChevronsUpDown, Rows3, Columns3,
-  LayoutTemplate, RectangleHorizontal, Share2, Navigation,
-  Table, Code, GalleryHorizontal, ListCollapse, Group
+  RectangleHorizontal, Share2, Navigation,
+  Table, Code, ListCollapse, Group, SquareDashedBottom
 } from 'lucide-vue-next'
 
 const { onDragStart, onDragEnd } = useDragDrop()
@@ -23,11 +23,10 @@ const COMPONENTS = [
   // Media
   { type: 'mj-image' as NodeType, label: 'Image', icon: Image, group: 'Media' },
   { type: 'mj-avatar' as NodeType, label: 'Avatar', icon: User, group: 'Media' },
-  { type: 'mj-carousel' as NodeType, label: 'Carousel', icon: GalleryHorizontal, group: 'Media' },
   // Layout
+  { type: 'mj-wrapper' as NodeType, label: 'Wrapper', icon: SquareDashedBottom, group: 'Layout' },
   { type: 'mj-section' as NodeType, label: 'Section', icon: Rows3, group: 'Layout' },
   { type: 'mj-column' as NodeType, label: 'Column', icon: Columns3, group: 'Layout' },
-  { type: 'mj-wrapper' as NodeType, label: 'Wrapper', icon: LayoutTemplate, group: 'Layout' },
   { type: 'mj-hero' as NodeType, label: 'Hero', icon: RectangleHorizontal, group: 'Layout' },
   { type: 'mj-group' as NodeType, label: 'Group', icon: Group, group: 'Layout' },
   { type: 'mj-divider' as NodeType, label: 'Divider', icon: Minus, group: 'Layout' },

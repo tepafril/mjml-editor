@@ -1,6 +1,7 @@
 import { useEditorStore } from '@/stores/editor.store'
 import { useHeadStore } from '@/stores/head.store'
 import { buildFullExportMjml } from '@/utils/mjmlSerializer'
+import { buildTemplateHtml } from '@/utils/templateExporter'
 import { deserializeFromMjml } from '@/utils/mjmlDeserializer'
 // @ts-expect-error mjml-browser has no types
 import mjml2html from 'mjml-browser'
@@ -78,8 +79,9 @@ export function useImportExport() {
       reader.onload = (e) => {
         try {
           const mjmlString = e.target?.result as string
-          const tree = deserializeFromMjml(mjmlString)
+          const { tree, head } = deserializeFromMjml(mjmlString)
           editor.loadTree(tree)
+          headStore.loadSettings(head)
         } catch (err) {
           console.error('Failed to import MJML:', err)
         }
@@ -88,5 +90,10 @@ export function useImportExport() {
     })
   }
 
-  return { exportJson, exportMjml, exportHtml, importJson, importMjml }
+  function exportTemplateHtml() {
+    const html = buildTemplateHtml(editor.tree, headStore.settings)
+    downloadFile(html, 'template.html', 'text/html')
+  }
+
+  return { exportJson, exportMjml, exportHtml, exportTemplateHtml, importJson, importMjml }
 }

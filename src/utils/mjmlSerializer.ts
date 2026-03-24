@@ -5,6 +5,11 @@ function escapeAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
+const CONTAINER_TYPES = new Set([
+  'mj-section', 'mj-column', 'mj-wrapper', 'mj-group',
+  'mj-hero', 'mj-social', 'mj-navbar', 'mj-accordion', 'mj-accordion-element',
+])
+
 // Pseudo-types that map to real MJML tags
 const PSEUDO_TYPE_MAP: Record<string, string> = {
   'mj-heading': 'mj-text',
@@ -41,14 +46,25 @@ export function serializeToMjml(node: EditorNode, indent = 0): string {
 
   const cssClass = ` css-class="node-${node.id}"`
 
-  if (node.children.length > 0) {
-    const childrenStr = node.children
-      .filter(c => !c.hidden)
+  // Container types that accept children: ensure they have visible content
+  const visibleChildren = node.children.filter(c => !c.hidden)
+
+  if (visibleChildren.length > 0) {
+    const childrenStr = visibleChildren
       .map(c => serializeToMjml(c, indent + 1))
       .filter(Boolean)
       .join('\n')
     const tagAttrs = attrs ? ' ' + attrs : ''
     return `${pad}<${tagName}${tagAttrs}${cssClass}>\n${childrenStr}\n${pad}</${tagName}>`
+  }
+
+  // Empty containers: inject a placeholder so they have height and are droppable
+  if (CONTAINER_TYPES.has(node.type)) {
+    const inner = node.type === 'mj-section' || node.type === 'mj-wrapper' || node.type === 'mj-group'
+      ? `${pad}  <mj-column>\n${pad}    <mj-text color="#aaaaaa" align="center" font-size="12px" padding="20px">Drop components here</mj-text>\n${pad}  </mj-column>`
+      : `${pad}  <mj-text color="#aaaaaa" align="center" font-size="12px" padding="20px">Drop components here</mj-text>`
+    const tagAttrs = attrs ? ' ' + attrs : ''
+    return `${pad}<${tagName}${tagAttrs}${cssClass}>\n${inner}\n${pad}</${tagName}>`
   }
 
   if (node.content) {

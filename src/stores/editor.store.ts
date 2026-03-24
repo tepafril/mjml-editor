@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { EditorNode } from '@/types/node.types'
+import type { EditorNode, TemplateLogic } from '@/types/node.types'
 import { useHistoryStore } from './history.store'
 import { treeUtils } from '@/utils/treeUtils'
 import { createDefaultTree } from '@/utils/defaultProps'
@@ -9,6 +9,7 @@ export const useEditorStore = defineStore('editor', () => {
   const tree = ref<EditorNode>(createDefaultTree())
   const selectedId = ref<string | null>(null)
   const hoveredId = ref<string | null>(null)
+  const editingNodeId = ref<string | null>(null)
 
   const historyStore = useHistoryStore()
 
@@ -84,10 +85,30 @@ export const useEditorStore = defineStore('editor', () => {
     selectedId.value = null
   }
 
+  function updateNodeTemplateLogic(id: string, logic: Partial<TemplateLogic>) {
+    snapshot()
+    const node = treeUtils.findById(tree.value, id)
+    if (!node) return
+    node.templateLogic = { ...node.templateLogic, ...logic }
+    if (!node.templateLogic.foreach) delete node.templateLogic.foreach
+    if (!node.templateLogic.foreachAs) delete node.templateLogic.foreachAs
+    if (!node.templateLogic.if) delete node.templateLogic.if
+    if (Object.keys(node.templateLogic).length === 0) delete node.templateLogic
+  }
+
+  function startEditing(id: string) {
+    editingNodeId.value = id
+  }
+
+  function stopEditing() {
+    editingNodeId.value = null
+  }
+
   return {
-    tree, selectedId, hoveredId, selectedNode,
+    tree, selectedId, hoveredId, editingNodeId, selectedNode,
     selectNode, hoverNode, updateNodeProps, updateNodeContent,
     insertNode, moveNode, removeNode, duplicateNode, loadTree,
+    updateNodeTemplateLogic, startEditing, stopEditing,
     undo, redo, canUndo, canRedo,
   }
 })

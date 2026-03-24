@@ -66,6 +66,7 @@ export function deepClone(node: EditorNode): EditorNode {
     id: nanoid(),
     props: { ...node.props },
     children: node.children.map(deepClone),
+    templateLogic: node.templateLogic ? { ...node.templateLogic } : undefined,
   }
 }
 
@@ -76,6 +77,18 @@ export function duplicate(root: EditorNode, id: string) {
   if (idx === -1) return
   const clone = deepClone(parent.children[idx])
   parent.children.splice(idx + 1, 0, clone)
+}
+
+export function getAncestorIds(root: EditorNode, id: string): string[] {
+  const ids: string[] = []
+  let current = id
+  while (true) {
+    const parent = findParent(root, current)
+    if (!parent) break
+    ids.push(parent.id)
+    current = parent.id
+  }
+  return ids
 }
 
 export const treeUtils = {
@@ -89,4 +102,5 @@ export const treeUtils = {
   updateContent,
   deepClone,
   duplicate,
+  getAncestorIds,
 }

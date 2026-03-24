@@ -135,25 +135,6 @@ export const NODE_DEFAULT_PROPS: Record<NodeType, Record<string, string>> = {
   },
   'mj-raw': {},
   // --- Phase 4 ---
-  'mj-carousel': {
-    'align': 'center',
-    'border-radius': '0',
-    'icon-width': '44px',
-    'left-icon': '',
-    'right-icon': '',
-    'tb-border': '2px solid transparent',
-    'tb-border-radius': '0',
-    'tb-hover-border-color': 'inherit',
-    'tb-selected-border-color': '#ccc',
-    'tb-width': '',
-  },
-  'mj-carousel-image': {
-    'src': 'https://via.placeholder.com/600x300',
-    'alt': '',
-    'href': '#',
-    'thumbnails-src': '',
-    'width': '600px',
-  },
   'mj-accordion': {
     'border': '1px solid #e0e0e0',
     'padding': '10px 25px',
