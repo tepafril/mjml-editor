@@ -9,21 +9,26 @@ import { useFlipAnimation } from '@/composables/useFlipAnimation'
 import { ALLOWED_CHILDREN, type NodeType } from '@/types/node.types'
 import { treeUtils } from '@/utils/treeUtils'
 import { createNode } from '@/utils/defaultProps'
+import { useSavedSections } from '@/composables/useSavedSections'
 import CanvasIframe from '@/components/canvas/CanvasIframe.vue'
+import HtmlSourcePanel from '@/components/canvas/HtmlSourcePanel.vue'
 import SelectionBox from '@/components/canvas/SelectionBox.vue'
 import DropZoneIndicator from '@/components/canvas/DropZoneIndicator.vue'
 import DragGhost from '@/components/canvas/DragGhost.vue'
+import InlineEditToolbar from '@/components/canvas/InlineEditToolbar.vue'
 
 
 const editorStore = useEditorStore()
 const previewStore = usePreviewStore()
 const dragStore = useDragStore()
+const { saveNode, savedSections, cloneNode: cloneSavedSection } = useSavedSections()
 const { compiledHtml, mjmlSource, pause: pauseCompiler, resume: resumeCompiler } = useMjmlCompiler()
 const { onDragEnd } = useDragDrop()
 const { captureBeforeMove, playFlipAnimation, cancelFlip, isAnimating } = useFlipAnimation()
 
 const iframeDoc = ref<Document | null>(null)
 const canvasRef = ref<HTMLElement>()
+const toolbarActive = ref(false)
 
 const selectedRect = ref<{ top: number; left: number; width: number; height: number } | null>(null)
 const hoveredRects = ref<{ top: number; left: number; width: number; height: number }[]>([])
@@ -40,6 +45,12 @@ const resolvedDropIndex = ref(0)
 const resolvedAutoWrap = ref(false) // true when dropping onto body needs auto-wrap
 
 const bodyWidth = computed(() => editorStore.tree.props['width'] || '600px')
+
+// Drop target container highlight
+const dropParentRect = computed(() => {
+  if (!resolvedDropParentId.value || !dragStore.isDragging) return null
+  return getNodeRect(resolvedDropParentId.value)
+})
 
 function getIframeOffset(): { top: number; left: number } {
   if (!canvasRef.value) return { top: 0, left: 0 }
@@ -90,7 +101,7 @@ function updateSelectionRects() {
 
 watch([() => editorStore.selectedId, () => editorStore.hoveredId], updateSelectionRects)
 watch(() => previewStore.mode, (mode) => {
-  if (mode === 'mjml-source') {
+  if (mode === 'mjml-source' || mode === 'html-source') {
     selectedRect.value = null
     hoveredRects.value = []
   } else {
@@ -104,8 +115,21 @@ watch(compiledHtml, () => {
   }
 })
 
+// Listen for scroll inside the iframe to update selection rects in real-time
+let iframeScrollCleanup: (() => void) | null = null
+
+function attachIframeScrollListener(doc: Document) {
+  iframeScrollCleanup?.()
+  const win = doc.defaultView
+  if (!win) return
+  const onScroll = () => updateSelectionRects()
+  win.addEventListener('scroll', onScroll, { passive: true })
+  iframeScrollCleanup = () => win.removeEventListener('scroll', onScroll)
+}
+
 function onIframeReady(doc: Document) {
   iframeDoc.value = doc
+  attachIframeScrollListener(doc)
   // Hide selection boxes before attempting FLIP
   selectedRect.value = null
   hoveredRects.value = []
@@ -213,6 +237,15 @@ function onDeleteSelected() {
   editorStore.removeNode(editorStore.selectedId)
 }
 
+function onSaveSection() {
+  if (!editorStore.selectedId) return
+  const node = treeUtils.findById(editorStore.tree, editorStore.selectedId)
+  if (!node) return
+  const label = node.type.replace('mj-', '')
+  const name = prompt('Name this section:', label) ?? label
+  saveNode(node, name.trim() || label)
+}
+
 // --- Pointer-based drag for existing nodes ---
 const isPointerDragging = ref(false)
 
@@ -250,15 +283,21 @@ function onPointerDragEnd() {
   document.removeEventListener('pointermove', onPointerDragMove)
   document.removeEventListener('pointerup', onPointerDragEnd)
 
-  if (resolvedDropParentId.value && dragStore.dragSource?.nodeId) {
-    if (iframeDoc.value) {
-      captureBeforeMove(iframeDoc.value, dragStore.dragSource.nodeId)
+  if (resolvedDropParentId.value && dragStore.dragSource) {
+    const src = dragStore.dragSource
+    if (src.nodeId) {
+      if (iframeDoc.value) {
+        captureBeforeMove(iframeDoc.value, src.nodeId)
+      }
+      editorStore.moveNode(src.nodeId, resolvedDropParentId.value, resolvedDropIndex.value)
+    } else if (src.savedSectionId) {
+      const saved = savedSections.value.find(s => s.id === src.savedSectionId)
+      if (saved) {
+        const newNode = cloneSavedSection(saved)
+        editorStore.insertNode(newNode, resolvedDropParentId.value, resolvedDropIndex.value)
+        editorStore.selectNode(newNode.id)
+      }
     }
-    editorStore.moveNode(
-      dragStore.dragSource.nodeId,
-      resolvedDropParentId.value,
-      resolvedDropIndex.value,
-    )
   }
 
   isPointerDragging.value = false
@@ -287,6 +326,10 @@ function resolveDropTarget(clientX: number, clientY: number) {
     const draggedNode = treeUtils.findById(editorStore.tree, source.nodeId)
     if (!draggedNode) return
     draggedType = draggedNode.type
+  } else if (source.savedSectionId) {
+    const saved = savedSections.value.find(s => s.id === source.savedSectionId)
+    if (!saved) return
+    draggedType = saved.nodeType as NodeType
   } else {
     return
   }
@@ -525,12 +568,26 @@ function handleOverlayDrop(e: DragEvent) {
         captureBeforeMove(iframeDoc.value, source.nodeId)
       }
       editorStore.moveNode(source.nodeId, resolvedDropParentId.value, resolvedDropIndex.value)
+    } else if (source.savedSectionId) {
+      const saved = savedSections.value.find(s => s.id === source.savedSectionId)
+      if (saved) {
+        const newNode = cloneSavedSection(saved)
+        editorStore.insertNode(newNode, resolvedDropParentId.value, resolvedDropIndex.value)
+        editorStore.selectNode(newNode.id)
+      }
     }
   } else if (source.nodeType) {
     // Fallback: no resolved target at all — auto-wrap at end
     const insertedId = autoWrapAndInsert(source.nodeType as NodeType, editorStore.tree.children.length)
     if (insertedId) {
       editorStore.selectNode(insertedId)
+    }
+  } else if (source.savedSectionId) {
+    const saved = savedSections.value.find(s => s.id === source.savedSectionId)
+    if (saved) {
+      const newNode = cloneSavedSection(saved)
+      editorStore.insertNode(newNode, editorStore.tree.id, editorStore.tree.children.length)
+      editorStore.selectNode(newNode.id)
     }
   }
 
@@ -565,6 +622,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('dragover', onGlobalDragOver)
   document.removeEventListener('dragend', onGlobalDragEnd)
+  iframeScrollCleanup?.()
 })
 </script>
 
@@ -579,34 +637,38 @@ onUnmounted(() => {
       <pre class="text-xs font-mono text-gray-700 bg-white p-4 rounded-lg border border-gray-200 whitespace-pre-wrap">{{ mjmlSource }}</pre>
     </div>
 
+    <!-- HTML Source view -->
+    <HtmlSourcePanel v-else-if="previewStore.mode === 'html-source'" :html="compiledHtml" />
+
     <!-- Live preview -->
     <div
       v-else
       class="h-full flex justify-center"
-      :class="[previewStore.mode === 'desktop' ? 'p-8' : 'py-8']"
       @click.self="editorStore.selectNode(null)"
     >
       <div
-        class="h-full transition-all duration-300 shadow-sm"
-        :style="{ width: previewStore.canvasWidth, maxWidth: `${bodyWidth}` }"
+        class="h-full transition-all duration-300 bg-white shadow-sm"
+        :style="{ width: previewStore.canvasWidth, maxWidth: '100%' }"
       >
-        <CanvasIframe
-          :html="compiledHtml"
-          :editingNodeId="editorStore.editingNodeId"
-          :nodeTypes="nodeTypeMap"
-          @nodeClick="onNodeClick"
-          @nodeHover="onNodeHover"
-          @iframeClick="onIframeClick"
-          @ready="onIframeReady"
-          @editStart="onEditStart"
-          @editEnd="onEditEnd"
-        />
+          <CanvasIframe
+            :html="compiledHtml"
+            :editingNodeId="editorStore.editingNodeId"
+            :nodeTypes="nodeTypeMap"
+            :toolbarActive="toolbarActive"
+            :showGridLines="previewStore.showGridLines"
+            @nodeClick="onNodeClick"
+            @nodeHover="onNodeHover"
+            @iframeClick="onIframeClick"
+            @ready="onIframeReady"
+            @editStart="onEditStart"
+            @editEnd="onEditEnd"
+          />
       </div>
     </div>
 
     <!-- Transparent drag overlay — covers iframe during drag to capture events -->
     <div
-      v-if="dragStore.isDragging && previewStore.mode !== 'mjml-source'"
+      v-if="dragStore.isDragging && previewStore.mode !== 'mjml-source' && previewStore.mode !== 'html-source'"
       class="absolute inset-0 z-40"
       :class="{ 'cursor-grabbing': isPointerDragging }"
       @dragover.prevent="handleOverlayDragOver"
@@ -617,39 +679,57 @@ onUnmounted(() => {
       @pointerup="onPointerDragEnd"
     />
 
-    <!-- Drop indicator line -->
-    <DropZoneIndicator
-      :visible="dropIndicatorVisible"
-      :y="dropIndicatorY"
-      :x="dropIndicatorX"
-      :width="dropIndicatorWidth"
-    />
+    <!-- Overlay container — clipped to canvas bounds so overlays don't create extra scrollbars -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <!-- Drop indicator line -->
+      <DropZoneIndicator
+        :visible="dropIndicatorVisible"
+        :y="dropIndicatorY"
+        :x="dropIndicatorX"
+        :width="dropIndicatorWidth"
+      />
 
-    <!-- Selection overlays (hide during inline editing or source view) -->
-    <SelectionBox
-      v-if="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source'"
-      :rect="selectedRect"
-      type="selected"
-      :draggable="selectedNodeDraggable"
-      :canMoveUp="canMoveUp"
-      :canMoveDown="canMoveDown"
-      @dragStart="onSelectionDragStart"
-      @moveUp="onMoveUp"
-      @moveDown="onMoveDown"
-      @duplicate="onDuplicateSelected"
-      @delete="onDeleteSelected"
-    >
-      <template #label>{{ selectedNodeType?.replace('mj-', '') }}</template>
-    </SelectionBox>
-    <SelectionBox
-      v-for="(rect, i) in hoveredRects"
-      v-show="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source'"
-      :key="i"
-      :rect="rect"
-      type="hovered"
-    />
+      <!-- Selection overlays (hide during inline editing or source view) -->
+      <SelectionBox
+        v-if="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source' && previewStore.mode !== 'html-source'"
+        :rect="selectedRect"
+        type="selected"
+        :draggable="selectedNodeDraggable"
+        :canMoveUp="canMoveUp"
+        :canMoveDown="canMoveDown"
+        @dragStart="onSelectionDragStart"
+        @moveUp="onMoveUp"
+        @moveDown="onMoveDown"
+        @duplicate="onDuplicateSelected"
+        @delete="onDeleteSelected"
+        @saveSection="onSaveSection"
+      >
+        <template #label>{{ selectedNodeType?.replace('mj-', '') }}</template>
+      </SelectionBox>
+      <SelectionBox
+        v-for="(rect, i) in hoveredRects"
+        v-show="!editorStore.editingNodeId && previewStore.mode !== 'mjml-source' && previewStore.mode !== 'html-source'"
+        :key="i"
+        :rect="rect"
+        type="hovered"
+      />
 
-    <!-- Drag ghost -->
-    <DragGhost />
+      <!-- Drop target container highlight -->
+      <SelectionBox
+        v-if="dragStore.isDragging"
+        :rect="dropParentRect"
+        type="drop-target"
+      />
+
+      <!-- Drag ghost -->
+      <DragGhost />
+    </div>
+
+    <!-- Inline edit formatting toolbar — outside overflow-hidden wrapper so it's not clipped -->
+    <InlineEditToolbar
+      :iframeDoc="iframeDoc"
+      :editingNodeId="editorStore.editingNodeId"
+      @update:active="toolbarActive = $event"
+    />
   </div>
 </template>

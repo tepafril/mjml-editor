@@ -7,7 +7,7 @@ function escapeAttr(value: string): string {
 
 const CONTAINER_TYPES = new Set([
   'mj-section', 'mj-column', 'mj-wrapper', 'mj-group',
-  'mj-hero', 'mj-social', 'mj-navbar', 'mj-accordion', 'mj-accordion-element',
+  'mj-hero', 'mj-social', 'mj-navbar',
 ])
 
 // Pseudo-types that map to real MJML tags
@@ -95,10 +95,32 @@ function serializeHead(head?: HeadSettings): string {
   const attrEntries = Object.entries(head.globalAttributes || {})
   if (attrEntries.length > 0) {
     const attrs = attrEntries.map(([tag, props]) => {
-      const propsStr = Object.entries(props).filter(([, v]) => v).map(([k, v]) => `${k}="${escapeAttr(v)}"`).join(' ')
+      const validProps = Object.entries(props).filter(([k, v]) => v && k !== '_placeholder')
+      if (validProps.length === 0 && !tag.startsWith('mj-class.')) return ''
+      const propsStr = validProps.map(([k, v]) => `${k}="${escapeAttr(v)}"`).join(' ')
+      if (tag.startsWith('mj-class.')) {
+        const className = tag.replace('mj-class.', '')
+        if (validProps.length === 0) return ''
+        return `      <mj-class name="${escapeAttr(className)}" ${propsStr} />`
+      }
       return `      <${tag} ${propsStr} />`
+    }).filter(Boolean).join('\n')
+    if (attrs) {
+      parts.push(`    <mj-attributes>\n${attrs}\n    </mj-attributes>`)
+    }
+  }
+
+  // mj-html-attributes
+  const htmlAttrs = (head.htmlAttributes || []).filter(s => s.path && Object.keys(s.attributes).length > 0)
+  if (htmlAttrs.length > 0) {
+    const selectors = htmlAttrs.map(s => {
+      const attrTags = Object.entries(s.attributes)
+        .filter(([, v]) => v !== undefined)
+        .map(([name, value]) => `        <mj-html-attribute name="${escapeAttr(name)}">${escapeAttr(value)}</mj-html-attribute>`)
+        .join('\n')
+      return `      <mj-selector path="${escapeAttr(s.path)}">\n${attrTags}\n      </mj-selector>`
     }).join('\n')
-    parts.push(`    <mj-attributes>\n${attrs}\n    </mj-attributes>`)
+    parts.push(`    <mj-html-attributes>\n${selectors}\n    </mj-html-attributes>`)
   }
 
   if (parts.length === 0) return ''

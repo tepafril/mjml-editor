@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useEditorStore } from '@/stores/editor.store'
-import { usePreviewStore } from '@/stores/preview.store'
+import { usePreviewStore, type PreviewMode } from '@/stores/preview.store'
 import { useHeadStore } from '@/stores/head.store'
 import type { HeadSettings } from '@/types/mjml.types'
 import IconButton from '@/components/ui/IconButton.vue'
 import EmailSettingsPanel from '@/components/panels/EmailSettingsPanel.vue'
+import TemplatesPanel from '@/components/panels/TemplatesPanel.vue'
 import Dialog from 'primevue/dialog'
 import {
-  Undo2, Redo2, Monitor, Smartphone, Code, Settings
+  Undo2, Redo2, Monitor, Smartphone, Code, FileCode, Settings, Grid3x3, LayoutTemplate
 } from 'lucide-vue-next'
 
 const editorStore = useEditorStore()
@@ -16,17 +17,29 @@ const previewStore = usePreviewStore()
 const headStore = useHeadStore()
 
 const settingsOpen = ref(false)
+const templatesOpen = ref(false)
 
 // Snapshots taken when dialog opens, used for cancel/revert
 let headSnapshot: HeadSettings | null = null
 let bodyPropsSnapshot: Record<string, string> | null = null
 
-function openSettings() {
+const settingsInitialTab = ref<string | undefined>()
+
+function openSettings(tab?: string) {
   // Snapshot current state before editing
   headSnapshot = JSON.parse(JSON.stringify(headStore.settings))
   bodyPropsSnapshot = JSON.parse(JSON.stringify(editorStore.tree.props))
+  settingsInitialTab.value = tab
   settingsOpen.value = true
 }
+
+// Watch for global requests to open settings
+watch(() => editorStore.openSettingsTab, (tab) => {
+  if (tab) {
+    openSettings(tab)
+    editorStore.openSettingsTab = null
+  }
+})
 
 function saveSettings() {
   // Just close — changes are already applied in real-time
@@ -48,10 +61,11 @@ function cancelSettings() {
   settingsOpen.value = false
 }
 
-const previewModes = [
-  { value: 'desktop' as const, icon: Monitor, title: 'Desktop' },
-  { value: 'mobile' as const, icon: Smartphone, title: 'Mobile' },
-  { value: 'mjml-source' as const, icon: Code, title: 'Source' },
+const previewModes: { value: PreviewMode; icon: unknown; title: string }[] = [
+  { value: 'desktop' as PreviewMode, icon: Monitor, title: 'Desktop' },
+  { value: 'mobile' as PreviewMode, icon: Smartphone, title: 'Mobile' },
+  { value: 'mjml-source' as PreviewMode, icon: Code, title: 'MJML' },
+  { value: 'html-source' as PreviewMode, icon: FileCode, title: 'HTML' },
 ]
 </script>
 
@@ -95,18 +109,59 @@ const previewModes = [
       </button>
     </div>
 
+    <!-- Grid toggle -->
+    <IconButton
+      @click="previewStore.showGridLines = !previewStore.showGridLines"
+      :title="previewStore.showGridLines ? 'Hide grid lines' : 'Show grid lines'"
+    >
+      <Grid3x3
+        class="w-4 h-4"
+        :class="previewStore.showGridLines ? 'text-indigo-600' : ''"
+      />
+    </IconButton>
+
     <!-- Spacer -->
     <div class="flex-1" />
+
+    <!-- Templates button -->
+    <button
+      title="Browse Templates"
+      @click="templatesOpen = true"
+      class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 rounded-md transition-colors cursor-pointer"
+    >
+      <LayoutTemplate class="w-4 h-4" />
+      Templates
+    </button>
 
     <!-- Settings -->
     <button
       title="Email Settings"
-      @click="openSettings"
+      @click="() => openSettings()"
       class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 rounded-md transition-colors cursor-pointer"
     >
       <Settings class="w-4 h-4" />
       Email Settings
     </button>
+
+    <!-- Templates Dialog -->
+    <Dialog
+      v-model:visible="templatesOpen"
+      modal
+      :closable="true"
+      :style="{ width: '960px', maxWidth: '95vw' }"
+      :pt="{
+        content: { style: 'padding: 0; height: 600px; display: flex; flex-direction: column;' },
+        header: { style: 'padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb' },
+      }"
+    >
+      <template #header>
+        <div class="flex items-center gap-2">
+          <LayoutTemplate class="w-4 h-4 text-indigo-600" />
+          <span class="text-sm font-semibold text-gray-900">Templates</span>
+        </div>
+      </template>
+      <TemplatesPanel @close="templatesOpen = false" />
+    </Dialog>
 
     <!-- Settings Dialog -->
     <Dialog
@@ -125,7 +180,7 @@ const previewModes = [
           <span class="text-sm font-semibold text-gray-900">Email Settings</span>
         </div>
       </template>
-      <EmailSettingsPanel />
+      <EmailSettingsPanel :initialTab="settingsInitialTab" />
       <template #footer>
         <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200 w-full">
           <button

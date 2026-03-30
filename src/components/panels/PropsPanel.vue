@@ -6,6 +6,8 @@ import { ALLOWED_CHILDREN } from '@/types/node.types'
 import UnitInput from '@/components/ui/UnitInput.vue'
 import ColorPicker from '@/components/ui/ColorPicker.vue'
 import AlignmentToggle from '@/components/ui/AlignmentToggle.vue'
+import FontFamilySelect from '@/components/ui/FontFamilySelect.vue'
+import CssClassInput from '@/components/ui/CssClassInput.vue'
 import SpacingControl from './SpacingControl.vue'
 import { Plus, Trash2, Repeat, GitBranch, Braces } from 'lucide-vue-next'
 import VariablePicker from './VariablePicker.vue'
@@ -16,12 +18,11 @@ const node = computed(() => editorStore.selectedNode)
 const HAS_CONTENT = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button',
   'mj-navbar-link', 'mj-social-element',
-  'mj-accordion-title', 'mj-accordion-text',
 ])
 const HAS_RAW_CONTENT = new Set<string>(['mj-table', 'mj-raw'])
 const HAS_TEXT_STYLES = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button',
-  'mj-navbar-link', 'mj-accordion-title', 'mj-accordion-text',
+  'mj-navbar-link',
 ])
 const HAS_ALIGN = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
@@ -34,13 +35,12 @@ const HAS_BG_URL = new Set<string>(['mj-wrapper', 'mj-hero', 'mj-section'])
 const HAS_PADDING = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
   'mj-divider', 'mj-section', 'mj-wrapper', 'mj-hero',
-  'mj-social', 'mj-navbar-link', 'mj-table', 'mj-accordion',
-  'mj-accordion-title', 'mj-accordion-text', 'mj-column',
+  'mj-social', 'mj-navbar-link', 'mj-table', 'mj-column',
 ])
 
 // Compound types that can have children added
 const CAN_ADD_CHILD = new Set<string>([
-  'mj-social', 'mj-navbar', 'mj-accordion',
+  'mj-social', 'mj-navbar',
 ])
 
 const SOCIAL_NETWORKS = [
@@ -91,7 +91,6 @@ const childTypeName = computed(() => {
   const map: Record<string, string> = {
     'mj-social': 'social link',
     'mj-navbar': 'nav link',
-    'mj-accordion': 'item',
   }
   return map[node.value.type] || 'child'
 })
@@ -164,19 +163,52 @@ const childTypeName = computed(() => {
     </div>
 
     <!-- Background URL (hero, wrapper, section) -->
-    <div v-if="HAS_BG_URL.has(node.type) && node.props['background-url'] !== undefined">
+    <div v-if="HAS_BG_URL.has(node.type) && node.props['background-url'] !== undefined" class="space-y-2">
       <UnitInput
         label="Background Image URL"
         :modelValue="node.props['background-url'] || ''"
         @update:modelValue="updateProp('background-url', $event)"
       />
-      <div v-if="node.props['background-position'] !== undefined" class="mt-2">
+      <UnitInput
+        v-if="node.props['background-position'] !== undefined"
+        label="Background Position"
+        :modelValue="node.props['background-position'] || ''"
+        @update:modelValue="updateProp('background-position', $event)"
+        placeholder="e.g. top center"
+      />
+      <div v-if="node.props['background-position-x'] !== undefined" class="grid grid-cols-2 gap-2">
         <UnitInput
-          label="Background Position"
-          :modelValue="node.props['background-position'] || 'center center'"
-          @update:modelValue="updateProp('background-position', $event)"
+          label="BG Position X"
+          :modelValue="node.props['background-position-x'] || ''"
+          @update:modelValue="updateProp('background-position-x', $event)"
+        />
+        <UnitInput
+          v-if="node.props['background-position-y'] !== undefined"
+          label="BG Position Y"
+          :modelValue="node.props['background-position-y'] || ''"
+          @update:modelValue="updateProp('background-position-y', $event)"
         />
       </div>
+      <div v-if="node.props['background-repeat'] !== undefined">
+        <label class="text-xs text-gray-500 mb-1 block">Background Repeat</label>
+        <select
+          :value="node.props['background-repeat'] || ''"
+          @change="updateProp('background-repeat', ($event.target as HTMLSelectElement).value)"
+          class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white
+                 focus:outline-none focus:border-indigo-400"
+        >
+          <option value="">Default</option>
+          <option value="repeat">Repeat</option>
+          <option value="no-repeat">No Repeat</option>
+        </select>
+      </div>
+      <UnitInput
+        v-if="node.props['background-size'] !== undefined"
+        label="Background Size"
+        :modelValue="node.props['background-size'] || ''"
+        @update:modelValue="updateProp('background-size', $event)"
+        placeholder="e.g. cover, contain, auto"
+      />
     </div>
 
     <!-- Href -->
@@ -253,8 +285,8 @@ const childTypeName = computed(() => {
       </select>
     </div>
 
-    <!-- Group direction -->
-    <div v-if="node.type === 'mj-group'">
+    <!-- Direction (group, section, column) -->
+    <div v-if="node.props['direction'] !== undefined && ['mj-group', 'mj-section', 'mj-column'].includes(node.type)">
       <label class="text-xs text-gray-500 mb-1 block">Direction</label>
       <select
         :value="node.props.direction || 'ltr'"
@@ -267,17 +299,17 @@ const childTypeName = computed(() => {
       </select>
     </div>
 
-    <!-- Accordion icon position -->
-    <div v-if="node.type === 'mj-accordion'">
-      <label class="text-xs text-gray-500 mb-1 block">Icon Position</label>
+    <!-- Full width (section) -->
+    <div v-if="node.props['full-width'] !== undefined">
+      <label class="text-xs text-gray-500 mb-1 block">Full Width</label>
       <select
-        :value="node.props['icon-position'] || 'right'"
-        @change="updateProp('icon-position', ($event.target as HTMLSelectElement).value)"
+        :value="node.props['full-width'] || ''"
+        @change="updateProp('full-width', ($event.target as HTMLSelectElement).value)"
         class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white
                focus:outline-none focus:border-indigo-400"
       >
-        <option value="right">Right</option>
-        <option value="left">Left</option>
+        <option value="">Default</option>
+        <option value="full-width">Full Width</option>
       </select>
     </div>
 
@@ -328,17 +360,69 @@ const childTypeName = computed(() => {
           @update:modelValue="updateProp('line-height', $event)"
         />
       </div>
-      <UnitInput
+      <FontFamilySelect
         label="Font Family"
-        :modelValue="node.props['font-family'] || 'Arial, sans-serif'"
+        :modelValue="node.props['font-family'] || ''"
         @update:modelValue="updateProp('font-family', $event)"
       />
-      <UnitInput
-        v-if="node.props['font-weight'] !== undefined"
-        label="Font Weight"
-        :modelValue="node.props['font-weight'] || ''"
-        @update:modelValue="updateProp('font-weight', $event)"
-      />
+      <div class="grid grid-cols-2 gap-2">
+        <UnitInput
+          v-if="node.props['font-weight'] !== undefined"
+          label="Font Weight"
+          :modelValue="node.props['font-weight'] || ''"
+          @update:modelValue="updateProp('font-weight', $event)"
+        />
+        <div v-if="node.props['font-style'] !== undefined">
+          <label class="text-xs text-gray-500 mb-1 block">Font Style</label>
+          <select
+            :value="node.props['font-style'] || ''"
+            @change="updateProp('font-style', ($event.target as HTMLSelectElement).value)"
+            class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white
+                   focus:outline-none focus:border-indigo-400"
+          >
+            <option value="">Normal</option>
+            <option value="italic">Italic</option>
+            <option value="oblique">Oblique</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <UnitInput
+          v-if="node.props['letter-spacing'] !== undefined"
+          label="Letter Spacing"
+          :modelValue="node.props['letter-spacing'] || ''"
+          @update:modelValue="updateProp('letter-spacing', $event)"
+          placeholder="e.g. 1px"
+        />
+        <div v-if="node.props['text-decoration'] !== undefined">
+          <label class="text-xs text-gray-500 mb-1 block">Text Decoration</label>
+          <select
+            :value="node.props['text-decoration'] || ''"
+            @change="updateProp('text-decoration', ($event.target as HTMLSelectElement).value)"
+            class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white
+                   focus:outline-none focus:border-indigo-400"
+          >
+            <option value="">None</option>
+            <option value="underline">Underline</option>
+            <option value="overline">Overline</option>
+            <option value="line-through">Line Through</option>
+          </select>
+        </div>
+      </div>
+      <div v-if="node.props['text-transform'] !== undefined">
+        <label class="text-xs text-gray-500 mb-1 block">Text Transform</label>
+        <select
+          :value="node.props['text-transform'] || ''"
+          @change="updateProp('text-transform', ($event.target as HTMLSelectElement).value)"
+          class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white
+                 focus:outline-none focus:border-indigo-400"
+        >
+          <option value="">None</option>
+          <option value="uppercase">Uppercase</option>
+          <option value="lowercase">Lowercase</option>
+          <option value="capitalize">Capitalize</option>
+        </select>
+      </div>
     </div>
 
     <!-- Colors -->
@@ -356,6 +440,12 @@ const childTypeName = computed(() => {
         :modelValue="node.props['background-color'] || ''"
         @update:modelValue="updateProp('background-color', $event)"
       />
+      <ColorPicker
+        v-if="node.props['container-background-color'] !== undefined"
+        label="Container Background"
+        :modelValue="node.props['container-background-color'] || ''"
+        @update:modelValue="updateProp('container-background-color', $event)"
+      />
     </div>
 
     <!-- Border radius -->
@@ -364,6 +454,91 @@ const childTypeName = computed(() => {
         label="Border Radius"
         :modelValue="node.props['border-radius'] || ''"
         @update:modelValue="updateProp('border-radius', $event)"
+      />
+    </div>
+
+    <!-- Border (shorthand + sides) -->
+    <div v-if="node.props['border'] !== undefined" class="space-y-2">
+      <UnitInput
+        label="Border"
+        :modelValue="node.props['border'] || ''"
+        @update:modelValue="updateProp('border', $event)"
+        placeholder="e.g. 1px solid #ccc"
+      />
+      <div class="grid grid-cols-2 gap-2">
+        <UnitInput
+          v-if="node.props['border-top'] !== undefined"
+          label="Border Top"
+          :modelValue="node.props['border-top'] || ''"
+          @update:modelValue="updateProp('border-top', $event)"
+        />
+        <UnitInput
+          v-if="node.props['border-bottom'] !== undefined"
+          label="Border Bottom"
+          :modelValue="node.props['border-bottom'] || ''"
+          @update:modelValue="updateProp('border-bottom', $event)"
+        />
+        <UnitInput
+          v-if="node.props['border-left'] !== undefined"
+          label="Border Left"
+          :modelValue="node.props['border-left'] || ''"
+          @update:modelValue="updateProp('border-left', $event)"
+        />
+        <UnitInput
+          v-if="node.props['border-right'] !== undefined"
+          label="Border Right"
+          :modelValue="node.props['border-right'] || ''"
+          @update:modelValue="updateProp('border-right', $event)"
+        />
+      </div>
+    </div>
+
+    <!-- Inner styles (mj-column) -->
+    <div v-if="node.props['inner-border'] !== undefined" class="space-y-2">
+      <label class="text-xs text-gray-500 block">Inner Border</label>
+      <ColorPicker
+        v-if="node.props['inner-background-color'] !== undefined"
+        label="Inner Background"
+        :modelValue="node.props['inner-background-color'] || ''"
+        @update:modelValue="updateProp('inner-background-color', $event)"
+      />
+      <UnitInput
+        label="Inner Border"
+        :modelValue="node.props['inner-border'] || ''"
+        @update:modelValue="updateProp('inner-border', $event)"
+        placeholder="e.g. 1px solid #ccc"
+      />
+      <div class="grid grid-cols-2 gap-2">
+        <UnitInput
+          v-if="node.props['inner-border-top'] !== undefined"
+          label="Inner Top"
+          :modelValue="node.props['inner-border-top'] || ''"
+          @update:modelValue="updateProp('inner-border-top', $event)"
+        />
+        <UnitInput
+          v-if="node.props['inner-border-bottom'] !== undefined"
+          label="Inner Bottom"
+          :modelValue="node.props['inner-border-bottom'] || ''"
+          @update:modelValue="updateProp('inner-border-bottom', $event)"
+        />
+        <UnitInput
+          v-if="node.props['inner-border-left'] !== undefined"
+          label="Inner Left"
+          :modelValue="node.props['inner-border-left'] || ''"
+          @update:modelValue="updateProp('inner-border-left', $event)"
+        />
+        <UnitInput
+          v-if="node.props['inner-border-right'] !== undefined"
+          label="Inner Right"
+          :modelValue="node.props['inner-border-right'] || ''"
+          @update:modelValue="updateProp('inner-border-right', $event)"
+        />
+      </div>
+      <UnitInput
+        v-if="node.props['inner-border-radius'] !== undefined"
+        label="Inner Border Radius"
+        :modelValue="node.props['inner-border-radius'] || ''"
+        @update:modelValue="updateProp('inner-border-radius', $event)"
       />
     </div>
 
@@ -381,15 +556,6 @@ const childTypeName = computed(() => {
       />
     </div>
 
-    <!-- Accordion border -->
-    <div v-if="node.type === 'mj-accordion'">
-      <UnitInput
-        label="Border"
-        :modelValue="node.props.border || ''"
-        @update:modelValue="updateProp('border', $event)"
-      />
-    </div>
-
     <!-- Vertical align -->
     <div v-if="node.props['vertical-align'] !== undefined && ['mj-column', 'mj-hero', 'mj-group'].includes(node.type)">
       <label class="text-xs text-gray-500 mb-1 block">Vertical Align</label>
@@ -404,6 +570,13 @@ const childTypeName = computed(() => {
         <option value="bottom">Bottom</option>
       </select>
     </div>
+
+    <!-- CSS Class -->
+    <CssClassInput
+      v-if="node.props['css-class'] !== undefined"
+      :modelValue="node.props['css-class'] || ''"
+      @update:modelValue="updateProp('css-class', $event)"
+    />
 
     <!-- Template Logic -->
     <div v-if="node.type !== 'mj-body'" class="space-y-2">

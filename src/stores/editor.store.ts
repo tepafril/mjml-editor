@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { EditorNode, TemplateLogic } from '@/types/node.types'
+import { NODE_DEFAULT_PROPS } from '@/types/mjml.types'
 import { useHistoryStore } from './history.store'
 import { treeUtils } from '@/utils/treeUtils'
 import { createDefaultTree } from '@/utils/defaultProps'
@@ -13,9 +14,21 @@ export const useEditorStore = defineStore('editor', () => {
 
   const historyStore = useHistoryStore()
 
-  const selectedNode = computed(() =>
-    selectedId.value ? treeUtils.findById(tree.value, selectedId.value) : null
-  )
+  const selectedNode = computed(() => {
+    const node = selectedId.value ? treeUtils.findById(tree.value, selectedId.value) : null
+    if (node) {
+      // Merge in any missing default props so the UI always shows all fields
+      const defaults = NODE_DEFAULT_PROPS[node.type]
+      if (defaults) {
+        for (const key in defaults) {
+          if (!(key in node.props)) {
+            node.props[key] = defaults[key]
+          }
+        }
+      }
+    }
+    return node
+  })
 
   const canUndo = computed(() => historyStore.canUndo)
   const canRedo = computed(() => historyStore.canRedo)
@@ -104,11 +117,19 @@ export const useEditorStore = defineStore('editor', () => {
     editingNodeId.value = null
   }
 
+  // Global request to open settings dialog on a specific tab
+  const openSettingsTab = ref<string | null>(null)
+
+  function requestOpenSettings(tab: string) {
+    openSettingsTab.value = tab
+  }
+
   return {
     tree, selectedId, hoveredId, editingNodeId, selectedNode,
     selectNode, hoverNode, updateNodeProps, updateNodeContent,
     insertNode, moveNode, removeNode, duplicateNode, loadTree,
     updateNodeTemplateLogic, startEditing, stopEditing,
     undo, redo, canUndo, canRedo,
+    openSettingsTab, requestOpenSettings,
   }
 })

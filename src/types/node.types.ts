@@ -20,11 +20,6 @@ export type NodeType =
   | 'mj-group'
   | 'mj-table'
   | 'mj-raw'
-  // Phase 4
-  | 'mj-accordion'
-  | 'mj-accordion-element'
-  | 'mj-accordion-title'
-  | 'mj-accordion-text'
 
 export interface TemplateLogic {
   foreach?: string
@@ -56,8 +51,6 @@ export const LEAF_TYPES: NodeType[] = [
   'mj-navbar-link',
   'mj-table',
   'mj-raw',
-  'mj-accordion-title',
-  'mj-accordion-text',
 ]
 
 export const ALLOWED_CHILDREN: Record<NodeType, NodeType[]> = {
@@ -68,13 +61,11 @@ export const ALLOWED_CHILDREN: Record<NodeType, NodeType[]> = {
   'mj-column': [
     'mj-text', 'mj-heading', 'mj-button', 'mj-image', 'mj-avatar',
     'mj-divider', 'mj-spacer', 'mj-social', 'mj-navbar', 'mj-table',
-    'mj-raw', 'mj-accordion',
+    'mj-raw',
   ],
   'mj-hero': ['mj-text', 'mj-heading', 'mj-button', 'mj-image'],
   'mj-social': ['mj-social-element'],
   'mj-navbar': ['mj-navbar-link'],
-  'mj-accordion': ['mj-accordion-element'],
-  'mj-accordion-element': ['mj-accordion-title', 'mj-accordion-text'],
   // Leaf types
   'mj-text': [],
   'mj-heading': [],
@@ -87,6 +78,4 @@ export const ALLOWED_CHILDREN: Record<NodeType, NodeType[]> = {
   'mj-navbar-link': [],
   'mj-table': [],
   'mj-raw': [],
-  'mj-accordion-title': [],
-  'mj-accordion-text': [],
 }

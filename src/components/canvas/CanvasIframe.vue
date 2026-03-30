@@ -5,13 +5,14 @@ const INLINE_EDITABLE_TYPES = new Set([
   'mj-text', 'mj-heading', 'mj-button',
   'mj-table',
   'mj-social-element', 'mj-navbar-link',
-  'mj-accordion-title', 'mj-accordion-text',
 ])
 
 const props = defineProps<{
   html: string
   editingNodeId?: string | null
   nodeTypes?: Record<string, string>  // nodeId -> nodeType mapping
+  toolbarActive?: boolean  // true when user is interacting with the inline edit toolbar
+  showGridLines?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -172,8 +173,14 @@ function stopInlineEdit() {
   }
 }
 
+let blurTimeout: ReturnType<typeof setTimeout> | null = null
+
 function handleEditBlur() {
-  stopInlineEdit()
+  // Delay to check if focus moved to the parent-document toolbar
+  blurTimeout = setTimeout(() => {
+    if (props.toolbarActive) return  // toolbar is being used, don't end editing
+    stopInlineEdit()
+  }, 150)
 }
 
 function handleEditKeydown(e: KeyboardEvent) {
@@ -244,6 +251,24 @@ function setupIframeListeners() {
   })
 }
 
+// Grid lines overlay
+const GRID_STYLE_ID = '__grid-lines-style'
+const GRID_CSS = `[class*="node-"] { outline: 1px dashed rgba(99, 102, 241, 0.35) !important; }`
+
+watch(() => props.showGridLines, (show) => {
+  const doc = iframeRef.value?.contentDocument
+  if (!doc) return
+  const existing = doc.getElementById(GRID_STYLE_ID)
+  if (show && !existing) {
+    const style = doc.createElement('style')
+    style.id = GRID_STYLE_ID
+    style.textContent = GRID_CSS
+    doc.head.appendChild(style)
+  } else if (!show && existing) {
+    existing.remove()
+  }
+})
+
 // Watch for external edit start trigger
 watch(() => props.editingNodeId, (nodeId) => {
   if (nodeId) {
@@ -271,6 +296,16 @@ watch(() => props.html, (html) => {
   setTimeout(() => {
     injectInteractionScript()
     setupIframeListeners()
+    // Re-apply grid lines if active
+    if (props.showGridLines) {
+      const existing = doc.getElementById(GRID_STYLE_ID)
+      if (!existing) {
+        const style = doc.createElement('style')
+        style.id = GRID_STYLE_ID
+        style.textContent = GRID_CSS
+        doc.head.appendChild(style)
+      }
+    }
     emit('ready', doc)
   }, 50)
 })
@@ -295,7 +330,7 @@ onMounted(() => {
 <template>
   <iframe
     ref="iframeRef"
-    class="w-full h-full border-0"
-    sandbox="allow-same-origin"
+    class="w-full h-full border-0 bg-white"
+    sandbox="allow-same-origin allow-scripts"
   />
 </template>

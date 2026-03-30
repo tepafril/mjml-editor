@@ -3,15 +3,17 @@ import { computed } from 'vue'
 import { useDragStore } from '@/stores/drag.store'
 import { useEditorStore } from '@/stores/editor.store'
 import { treeUtils } from '@/utils/treeUtils'
+import { useSavedSections } from '@/composables/useSavedSections'
 import {
   Type, Heading, MousePointer, Image, User,
   Minus, ChevronsUpDown, Rows3, Columns3,
   LayoutTemplate, RectangleHorizontal, Share2, Navigation,
-  Table, Code, ListCollapse, Group
+  Table, Code, Group
 } from 'lucide-vue-next'
 
 const dragStore = useDragStore()
 const editorStore = useEditorStore()
+const { savedSections } = useSavedSections()
 
 const ICON_MAP: Record<string, any> = {
   'mj-text': Type,
@@ -30,7 +32,6 @@ const ICON_MAP: Record<string, any> = {
   'mj-group': Group,
   'mj-table': Table,
   'mj-raw': Code,
-  'mj-accordion': ListCollapse,
 }
 
 const LABEL_MAP: Record<string, string> = {
@@ -66,6 +67,10 @@ const resolvedType = computed(() => {
     const node = treeUtils.findById(editorStore.tree, source.nodeId)
     return node?.type || null
   }
+  if (source.savedSectionId) {
+    const saved = savedSections.value.find(s => s.id === source.savedSectionId)
+    return saved?.nodeType || null
+  }
   return null
 })
 
@@ -75,6 +80,11 @@ const ghostIcon = computed(() => {
 })
 
 const label = computed(() => {
+  const source = dragStore.dragSource
+  if (source?.savedSectionId) {
+    const saved = savedSections.value.find(s => s.id === source.savedSectionId)
+    return saved?.name || 'Section'
+  }
   const type = resolvedType.value
   return type ? LABEL_MAP[type] || type : 'Move'
 })

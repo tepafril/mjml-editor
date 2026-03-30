@@ -3,6 +3,7 @@ import type { NodeType } from './node.types'
 export interface DragSource {
   nodeId?: string
   nodeType?: NodeType
+  savedSectionId?: string
 }
 
 export interface DropTarget {

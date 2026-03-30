@@ -6,7 +6,7 @@ import {
   Type, Heading, MousePointer, Image, User,
   Minus, ChevronsUpDown, Rows3, Columns3,
   RectangleHorizontal, Share2, Navigation,
-  Table, Code, ListCollapse, Group, SquareDashedBottom
+  Table, Code, Group, SquareDashedBottom
 } from 'lucide-vue-next'
 
 const { onDragStart, onDragEnd } = useDragDrop()
@@ -32,7 +32,6 @@ const COMPONENTS = [
   { type: 'mj-divider' as NodeType, label: 'Divider', icon: Minus, group: 'Layout' },
   { type: 'mj-spacer' as NodeType, label: 'Spacer', icon: ChevronsUpDown, group: 'Layout' },
   // Advanced
-  { type: 'mj-accordion' as NodeType, label: 'Accordion', icon: ListCollapse, group: 'Advanced' },
   { type: 'mj-raw' as NodeType, label: 'HTML', icon: Code, group: 'Advanced' },
 ]
 

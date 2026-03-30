@@ -8,28 +8,75 @@ export const NODE_DEFAULT_PROPS: Record<NodeType, Record<string, string>> = {
   'mj-section': {
     'padding': '20px 0',
     'background-color': '',
+    'background-url': '',
+    'background-position': '',
+    'background-position-x': '',
+    'background-position-y': '',
+    'background-repeat': '',
+    'background-size': '',
+    'border': '',
+    'border-bottom': '',
+    'border-left': '',
+    'border-right': '',
+    'border-top': '',
+    'border-radius': '',
+    'css-class': '',
+    'direction': '',
+    'full-width': '',
     'text-align': 'left',
   },
   'mj-column': {
-    'padding': '0px',
     'background-color': '',
+    'border': '',
+    'border-bottom': '',
+    'border-left': '',
+    'border-radius': '',
+    'border-right': '',
+    'border-top': '',
+    'css-class': '',
+    'direction': '',
+    'inner-background-color': '',
+    'inner-border': '',
+    'inner-border-bottom': '',
+    'inner-border-left': '',
+    'inner-border-radius': '',
+    'inner-border-right': '',
+    'inner-border-top': '',
+    'padding': '0px',
     'vertical-align': 'top',
+    'width': '',
   },
   'mj-text': {
-    'font-size': '14px',
+    'font-size': '13px',
     'color': '#000000',
-    'font-family': 'Arial, sans-serif',
-    'line-height': '1.5',
+    'font-family': 'Ubuntu, Helvetica, Arial, sans-serif',
+    'font-style': '',
+    'font-weight': '',
+    'line-height': '22px',
+    'letter-spacing': '',
+    'text-decoration': '',
+    'text-transform': '',
+    'height': '',
     'padding': '10px 25px',
     'align': 'left',
+    'container-background-color': '',
+    'css-class': '',
   },
   'mj-heading': {
     'font-size': '24px',
     'color': '#000000',
     'font-weight': 'bold',
-    'font-family': 'Arial, sans-serif',
+    'font-family': '',
+    'font-style': '',
+    'line-height': '',
+    'letter-spacing': '',
+    'text-decoration': '',
+    'text-transform': '',
+    'height': '',
     'padding': '10px 25px',
     'align': 'left',
+    'container-background-color': '',
+    'css-class': '',
   },
   'mj-button': {
     'background-color': '#4A90D9',
@@ -66,12 +113,22 @@ export const NODE_DEFAULT_PROPS: Record<NodeType, Record<string, string>> = {
   },
   // --- Phase 1 ---
   'mj-wrapper': {
-    'padding': '20px 0',
     'background-color': '',
-    'background-url': '',
+    'background-position': '',
+    'background-position-x': '',
+    'background-position-y': '',
     'background-repeat': 'repeat',
     'background-size': 'auto',
-    'full-width': 'full-width',
+    'background-url': '',
+    'border': '',
+    'border-bottom': '',
+    'border-left': '',
+    'border-radius': '',
+    'border-right': '',
+    'border-top': '',
+    'css-class': '',
+    'full-width': '',
+    'padding': '20px 0',
     'text-align': 'center',
   },
   'mj-hero': {
@@ -112,55 +169,29 @@ export const NODE_DEFAULT_PROPS: Record<NodeType, Record<string, string>> = {
     'href': '#',
     'color': '#000000',
     'font-size': '13px',
-    'font-family': 'Arial, sans-serif',
+    'font-family': '',
     'padding': '10px 15px',
     'text-decoration': 'none',
     'text-transform': 'uppercase',
   },
   // --- Phase 2 ---
   'mj-group': {
-    'width': '100%',
-    'direction': 'ltr',
     'background-color': '',
+    'css-class': '',
+    'direction': 'ltr',
     'vertical-align': 'top',
+    'width': '100%',
   },
   'mj-table': {
     'color': '#000000',
     'font-size': '13px',
-    'font-family': 'Arial, sans-serif',
+    'font-family': '',
     'padding': '10px 25px',
     'width': '100%',
     'cellpadding': '0',
     'cellspacing': '0',
   },
   'mj-raw': {},
-  // --- Phase 4 ---
-  'mj-accordion': {
-    'border': '1px solid #e0e0e0',
-    'padding': '10px 25px',
-    'icon-position': 'right',
-    'icon-align': 'middle',
-    'icon-height': '32px',
-    'icon-width': '32px',
-  },
-  'mj-accordion-element': {
-    'background-color': '',
-    'font-family': 'Arial, sans-serif',
-  },
-  'mj-accordion-title': {
-    'color': '#000000',
-    'font-size': '16px',
-    'font-family': 'Arial, sans-serif',
-    'padding': '16px',
-    'background-color': '#f0f0f0',
-  },
-  'mj-accordion-text': {
-    'color': '#333333',
-    'font-size': '14px',
-    'font-family': 'Arial, sans-serif',
-    'padding': '16px',
-    'background-color': '#ffffff',
-  },
 }
 
 export const NODE_DEFAULT_CONTENT: Partial<Record<NodeType, string>> = {
@@ -171,14 +202,17 @@ export const NODE_DEFAULT_CONTENT: Partial<Record<NodeType, string>> = {
   'mj-navbar-link': 'Link',
   'mj-table': '<tr><td style="padding:4px">Cell 1</td><td style="padding:4px">Cell 2</td></tr><tr><td style="padding:4px">Cell 3</td><td style="padding:4px">Cell 4</td></tr>',
   'mj-raw': '<!-- Your HTML here -->',
-  'mj-accordion-title': 'Question?',
-  'mj-accordion-text': 'Answer goes here...',
 }
 
 // --- Head Settings ---
 export interface GoogleFont {
   name: string
   href: string
+}
+
+export interface HtmlAttributeSelector {
+  path: string
+  attributes: Record<string, string>
 }
 
 export interface HeadSettings {
@@ -188,15 +222,19 @@ export interface HeadSettings {
   styles: string
   breakpoint: string
   globalAttributes: Record<string, Record<string, string>>
+  htmlAttributes: HtmlAttributeSelector[]
 }
 
 export function createDefaultHeadSettings(): HeadSettings {
   return {
     title: '',
     previewText: '',
-    fonts: [],
+    fonts: [
+      { name: 'Arial', href: '' },
+    ],
     styles: '',
     breakpoint: '',
     globalAttributes: {},
+    htmlAttributes: [],
   }
 }

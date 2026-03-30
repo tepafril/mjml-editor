@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { HeadSettings, GoogleFont } from '@/types/mjml.types'
+import type { HeadSettings, GoogleFont, HtmlAttributeSelector } from '@/types/mjml.types'
 import { createDefaultHeadSettings } from '@/types/mjml.types'
 
 export const useHeadStore = defineStore('head', () => {
@@ -41,6 +41,39 @@ export const useHeadStore = defineStore('head', () => {
     settings.value.globalAttributes[tag][prop] = value
   }
 
+  function removeGlobalAttribute(tag: string, prop?: string) {
+    if (!prop) {
+      delete settings.value.globalAttributes[tag]
+    } else {
+      delete settings.value.globalAttributes[tag]?.[prop]
+      // Clean up empty tag entries
+      if (settings.value.globalAttributes[tag] && Object.keys(settings.value.globalAttributes[tag]).length === 0) {
+        delete settings.value.globalAttributes[tag]
+      }
+    }
+  }
+
+  // --- HTML Attributes ---
+  function addHtmlSelector() {
+    settings.value.htmlAttributes.push({ path: '', attributes: {} })
+  }
+
+  function removeHtmlSelector(index: number) {
+    settings.value.htmlAttributes.splice(index, 1)
+  }
+
+  function updateHtmlSelectorPath(index: number, path: string) {
+    settings.value.htmlAttributes[index].path = path
+  }
+
+  function setHtmlAttribute(index: number, name: string, value: string) {
+    settings.value.htmlAttributes[index].attributes[name] = value
+  }
+
+  function removeHtmlAttribute(index: number, name: string) {
+    delete settings.value.htmlAttributes[index].attributes[name]
+  }
+
   function loadSettings(newSettings: HeadSettings) {
     settings.value = newSettings
   }
@@ -53,6 +86,9 @@ export const useHeadStore = defineStore('head', () => {
     settings,
     updateTitle, updatePreviewText, updateBreakpoint, updateStyles,
     addFont, removeFont, updateFont,
-    updateGlobalAttribute, loadSettings, reset,
+    updateGlobalAttribute, removeGlobalAttribute,
+    addHtmlSelector, removeHtmlSelector, updateHtmlSelectorPath,
+    setHtmlAttribute, removeHtmlAttribute,
+    loadSettings, reset,
   }
 })

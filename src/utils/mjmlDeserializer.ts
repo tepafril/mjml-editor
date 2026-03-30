@@ -9,8 +9,6 @@ const VALID_TYPES = new Set<string>([
   'mj-social', 'mj-social-element',
   'mj-navbar', 'mj-navbar-link',
   'mj-table', 'mj-raw',
-  'mj-accordion', 'mj-accordion-element',
-  'mj-accordion-title', 'mj-accordion-text',
 ])
 
 function parseAttributes(el: Element): Record<string, string> {
@@ -102,7 +100,33 @@ function parseHead(doc: Document): HeadSettings {
         props[attr.name] = attr.value
       }
       if (Object.keys(props).length > 0) {
-        head.globalAttributes[tag] = props
+        if (tag === 'mj-class' && props.name) {
+          // Store as mj-class.{name} with remaining props
+          const className = props.name
+          delete props.name
+          head.globalAttributes[`mj-class.${className}`] = props
+        } else {
+          head.globalAttributes[tag] = props
+        }
+      }
+    }
+  }
+
+  // Parse mj-html-attributes
+  const htmlAttributes = mjHead.querySelector('mj-html-attributes')
+  if (htmlAttributes) {
+    for (const selector of Array.from(htmlAttributes.querySelectorAll('mj-selector'))) {
+      const path = selector.getAttribute('path')
+      if (!path) continue
+      const attributes: Record<string, string> = {}
+      for (const attrEl of Array.from(selector.querySelectorAll('mj-html-attribute'))) {
+        const name = attrEl.getAttribute('name')
+        if (name) {
+          attributes[name] = attrEl.textContent?.trim() || ''
+        }
+      }
+      if (Object.keys(attributes).length > 0) {
+        head.htmlAttributes.push({ path, attributes })
       }
     }
   }
@@ -112,7 +136,8 @@ function parseHead(doc: Document): HeadSettings {
 
 export function deserializeFromMjml(mjmlString: string): { tree: EditorNode; head: HeadSettings } {
   const parser = new DOMParser()
-  const doc = parser.parseFromString(mjmlString, 'text/xml')
+  // Use text/html so HTML entities (&nbsp;, &copy;, etc.) are handled gracefully
+  const doc = parser.parseFromString(mjmlString, 'text/html')
 
   const mjBody = doc.querySelector('mj-body')
   if (!mjBody) {

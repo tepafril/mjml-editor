@@ -384,7 +384,7 @@
     {
       "attribute": "font-family",
       "accepts": "string",
-      "default": "Ubuntu, Helvetica, Arial, sans-serif",
+      "default": "",
       "description": "Font family",
       "components": [
         "mj-text",
@@ -520,7 +520,7 @@
     {
       "attribute": "ico-font-family",
       "accepts": "string",
-      "default": "Ubuntu, Helvetica, Arial, sans-serif",
+      "default": "",
       "description": "Hamburger icon font (requires hamburger)",
       "components": [
         "mj-navbar"

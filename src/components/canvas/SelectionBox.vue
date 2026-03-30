@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { GripVertical, ChevronUp, ChevronDown, Copy, Trash2 } from 'lucide-vue-next'
+import { GripVertical, ChevronUp, ChevronDown, Copy, Trash2, Bookmark } from 'lucide-vue-next'
 
 defineProps<{
   rect: { top: number; left: number; width: number; height: number } | null
-  type: 'selected' | 'hovered'
+  type: 'selected' | 'hovered' | 'drop-target'
   draggable?: boolean
   canMoveUp?: boolean
   canMoveDown?: boolean
@@ -15,6 +15,7 @@ const emit = defineEmits<{
   moveDown: []
   duplicate: []
   delete: []
+  saveSection: []
 }>()
 
 function onGripPointerDown(e: PointerEvent) {
@@ -31,6 +32,7 @@ function onGripPointerDown(e: PointerEvent) {
     :class="{
       'border-2 border-indigo-600': type === 'selected',
       'border border-dashed border-indigo-400': type === 'hovered',
+      'border-2 border-dashed border-emerald-500 bg-emerald-50/20': type === 'drop-target',
     }"
     :style="{
       top: rect.top + 'px',
@@ -42,12 +44,12 @@ function onGripPointerDown(e: PointerEvent) {
     <!-- Label -->
     <div
       v-if="type === 'selected'"
-      class="absolute -top-5 left-0 flex items-center gap-0"
+      class="absolute top-0 left-0 flex items-center gap-0"
     >
       <!-- Drag handle -->
       <button
         v-if="draggable"
-        class="pointer-events-auto  text-white rounded-tl
+        class="pointer-events-auto  text-white
                cursor-grab active:cursor-grabbing hover:bg-indigo-700 transition-colors
               w-5 h-5 bg-indigo-600
               flex items-center justify-center
@@ -56,8 +58,8 @@ function onGripPointerDown(e: PointerEvent) {
       >
         <GripVertical class="w-3 h-3" />
       </button>
-      <div class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 whitespace-nowrap rounded-tr h-5 bg-indigo-600"
-           :class="{ 'rounded-tl': !draggable }"
+      <div class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 whitespace-nowrap h-5 bg-indigo-600"
+           :class="{ '': !draggable }"
       >
         <slot name="label" />
       </div>
@@ -65,10 +67,10 @@ function onGripPointerDown(e: PointerEvent) {
     <!-- Vertical action toolbar -->
     <div
       v-if="type === 'selected' && draggable"
-      class="absolute top-0 -right-7 flex flex-col items-center gap-0"
+      class="absolute top-0 right-0 flex flex-col items-center gap-0"
     >
       <button
-        class="pointer-events-auto bg-indigo-600 text-white p-1 rounded-tr transition-colors"
+        class="pointer-events-auto bg-indigo-600 text-white p-1 transition-colors"
         :class="canMoveUp ? 'hover:bg-indigo-700' : 'opacity-40 cursor-not-allowed'"
         :disabled="!canMoveUp"
         @click.stop="canMoveUp && emit('moveUp')"
@@ -93,7 +95,14 @@ function onGripPointerDown(e: PointerEvent) {
         <Copy class="w-3.5 h-3.5" />
       </button>
       <button
-        class="pointer-events-auto bg-indigo-600 text-white p-1 rounded-br hover:bg-red-600 transition-colors"
+        class="pointer-events-auto bg-indigo-600 text-white p-1 hover:bg-indigo-700 transition-colors"
+        @click.stop="emit('saveSection')"
+        title="Save as section"
+      >
+        <Bookmark class="w-3.5 h-3.5" />
+      </button>
+      <button
+        class="pointer-events-auto bg-indigo-600 text-white p-1 hover:bg-red-600 transition-colors"
         @click.stop="emit('delete')"
         title="Delete"
       >

@@ -47,22 +47,6 @@ export function createNode(type: NodeType, overrides?: Partial<EditorNode>): Edi
           createNode('mj-navbar-link', { content: 'Contact' }),
         ]
         break
-      case 'mj-accordion':
-        node.children = [
-          createNode('mj-accordion-element', {
-            children: [
-              createNode('mj-accordion-title', { content: 'Question 1?' }),
-              createNode('mj-accordion-text', { content: 'Answer 1 goes here...' }),
-            ],
-          }),
-          createNode('mj-accordion-element', {
-            children: [
-              createNode('mj-accordion-title', { content: 'Question 2?' }),
-              createNode('mj-accordion-text', { content: 'Answer 2 goes here...' }),
-            ],
-          }),
-        ]
-        break
     }
   }
 

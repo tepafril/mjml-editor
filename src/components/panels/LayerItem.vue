@@ -7,8 +7,8 @@ import {
   Type, Heading, MousePointer, Image, User,
   Minus, ChevronsUpDown, Rows3, Columns3,
   LayoutTemplate, RectangleHorizontal, Share2, Navigation, Link,
-  Table, Code, ListCollapse, Group,
-  MessageSquare, Repeat, GitBranch
+  Table, Code, Group,
+  Repeat, GitBranch
 } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -42,10 +42,6 @@ const ICON_MAP: Record<string, any> = {
   'mj-group': Group,
   'mj-table': Table,
   'mj-raw': Code,
-  'mj-accordion': ListCollapse,
-  'mj-accordion-element': ListCollapse,
-  'mj-accordion-title': Heading,
-  'mj-accordion-text': MessageSquare,
 }
 
 const nodeIcon = computed(() => ICON_MAP[props.node.type] || Type)
