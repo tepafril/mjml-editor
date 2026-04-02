@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { EditorNode, TemplateLogic } from '@/types/node.types'
-import { NODE_DEFAULT_PROPS } from '@/types/mjml.types'
-import { useHistoryStore } from './history.store'
 import { treeUtils } from '@/utils/treeUtils'
 import { createDefaultTree } from '@/utils/defaultProps'
 
@@ -11,96 +9,47 @@ export const useEditorStore = defineStore('editor', () => {
   const selectedId = ref<string | null>(null)
   const hoveredId = ref<string | null>(null)
   const editingNodeId = ref<string | null>(null)
+  const openSettingsTab = ref<string | null>(null)
 
-  const historyStore = useHistoryStore()
+  // Pure computed — no side effects, no default-prop merging
+  const selectedNode = computed(() =>
+    selectedId.value ? treeUtils.findById(tree.value, selectedId.value) ?? null : null
+  )
 
-  const selectedNode = computed(() => {
-    const node = selectedId.value ? treeUtils.findById(tree.value, selectedId.value) : null
-    if (node) {
-      // Merge in any missing default props so the UI always shows all fields
-      const defaults = NODE_DEFAULT_PROPS[node.type]
-      if (defaults) {
-        for (const key in defaults) {
-          if (!(key in node.props)) {
-            node.props[key] = defaults[key]
-          }
-        }
-      }
-    }
-    return node
-  })
+  // ── UI state (no history needed) ──────────────────────────────────────────
 
-  const canUndo = computed(() => historyStore.canUndo)
-  const canRedo = computed(() => historyStore.canRedo)
+  function select(id: string | null) { selectedId.value = id }
+  function hover(id: string | null) { hoveredId.value = id }
+  function startEditing(id: string) { editingNodeId.value = id }
+  function stopEditing() { editingNodeId.value = null }
+  function requestOpenSettings(tab: string) { openSettingsTab.value = tab }
 
-  function snapshot() {
-    historyStore.push(JSON.stringify(tree.value))
-  }
+  // ── Low-level primitives (called only by Command objects) ─────────────────
+  // Prefixed with _ to signal "don't call directly from components".
 
-  function selectNode(id: string | null) {
-    selectedId.value = id
-  }
-
-  function hoverNode(id: string | null) {
-    hoveredId.value = id
-  }
-
-  function updateNodeProps(id: string, props: Record<string, string>) {
-    snapshot()
-    treeUtils.updateProps(tree.value, id, props)
-  }
-
-  function updateNodeContent(id: string, content: string) {
-    snapshot()
-    treeUtils.updateContent(tree.value, id, content)
-  }
-
-  function insertNode(node: EditorNode, parentId: string, index: number) {
-    snapshot()
+  function _insert(node: EditorNode, parentId: string, index: number) {
     treeUtils.insert(tree.value, node, parentId, index)
   }
 
-  function moveNode(nodeId: string, targetParentId: string, index: number) {
-    snapshot()
+  function _remove(nodeId: string) {
+    treeUtils.remove(tree.value, nodeId)
+    if (selectedId.value === nodeId) selectedId.value = null
+  }
+
+  function _move(nodeId: string, targetParentId: string, index: number) {
     treeUtils.move(tree.value, nodeId, targetParentId, index)
   }
 
-  function removeNode(id: string) {
-    snapshot()
-    treeUtils.remove(tree.value, id)
-    if (selectedId.value === id) selectedId.value = null
+  function _updateProps(nodeId: string, props: Record<string, string>) {
+    treeUtils.updateProps(tree.value, nodeId, props)
   }
 
-  function duplicateNode(id: string) {
-    snapshot()
-    treeUtils.duplicate(tree.value, id)
+  function _updateContent(nodeId: string, content: string) {
+    treeUtils.updateContent(tree.value, nodeId, content)
   }
 
-  function loadTree(newTree: EditorNode) {
-    snapshot()
-    tree.value = newTree
-    selectedId.value = null
-  }
-
-  function undo() {
-    const prev = historyStore.popUndo()
-    if (!prev) return
-    historyStore.pushRedo(JSON.stringify(tree.value))
-    tree.value = JSON.parse(prev)
-    selectedId.value = null
-  }
-
-  function redo() {
-    const next = historyStore.popRedo()
-    if (!next) return
-    historyStore.push(JSON.stringify(tree.value))
-    tree.value = JSON.parse(next)
-    selectedId.value = null
-  }
-
-  function updateNodeTemplateLogic(id: string, logic: Partial<TemplateLogic>) {
-    snapshot()
-    const node = treeUtils.findById(tree.value, id)
+  function _updateTemplateLogic(nodeId: string, logic: Partial<TemplateLogic>) {
+    const node = treeUtils.findById(tree.value, nodeId)
     if (!node) return
     node.templateLogic = { ...node.templateLogic, ...logic }
     if (!node.templateLogic.foreach) delete node.templateLogic.foreach
@@ -109,27 +58,22 @@ export const useEditorStore = defineStore('editor', () => {
     if (Object.keys(node.templateLogic).length === 0) delete node.templateLogic
   }
 
-  function startEditing(id: string) {
-    editingNodeId.value = id
+  function _restoreTemplateLogic(nodeId: string, logic: TemplateLogic | undefined) {
+    const node = treeUtils.findById(tree.value, nodeId)
+    if (!node) return
+    if (logic) node.templateLogic = logic
+    else delete node.templateLogic
   }
 
-  function stopEditing() {
-    editingNodeId.value = null
-  }
-
-  // Global request to open settings dialog on a specific tab
-  const openSettingsTab = ref<string | null>(null)
-
-  function requestOpenSettings(tab: string) {
-    openSettingsTab.value = tab
+  function _loadTree(newTree: EditorNode) {
+    tree.value = newTree
+    selectedId.value = null
   }
 
   return {
-    tree, selectedId, hoveredId, editingNodeId, selectedNode,
-    selectNode, hoverNode, updateNodeProps, updateNodeContent,
-    insertNode, moveNode, removeNode, duplicateNode, loadTree,
-    updateNodeTemplateLogic, startEditing, stopEditing,
-    undo, redo, canUndo, canRedo,
-    openSettingsTab, requestOpenSettings,
+    tree, selectedId, hoveredId, editingNodeId, openSettingsTab, selectedNode,
+    select, hover, startEditing, stopEditing, requestOpenSettings,
+    _insert, _remove, _move, _updateProps, _updateContent,
+    _updateTemplateLogic, _restoreTemplateLogic, _loadTree,
   }
 })

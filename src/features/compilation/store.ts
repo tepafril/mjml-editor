@@ -1,24 +1,25 @@
-import { ref, watch, computed } from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed, watch } from 'vue'
 import { useEditorStore } from '@/stores/editor.store'
 import { useHeadStore } from '@/stores/head.store'
-import { serialize } from '@/features/import-export'
+import { buildFullMjml } from '@/utils/mjmlSerializer'
 
 // @ts-expect-error mjml-browser has no types
 import mjml2html from 'mjml-browser'
 
-export function useMjmlCompiler() {
+export const useCompilationStore = defineStore('compilation', () => {
   const editorStore = useEditorStore()
   const headStore = useHeadStore()
+
   const compiledHtml = ref('')
   const compileError = ref<string | null>(null)
   const paused = ref(false)
-
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let pendingCompile = false
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
   function compile() {
     try {
-      const mjmlString = serialize(editorStore.tree, headStore.settings, { mode: 'preview' })
+      const mjmlString = buildFullMjml(editorStore.tree, headStore.settings)
       const result = mjml2html(mjmlString, { validationLevel: 'soft' })
       compiledHtml.value = result.html
       compileError.value = null
@@ -28,9 +29,7 @@ export function useMjmlCompiler() {
     }
   }
 
-  function pause() {
-    paused.value = true
-  }
+  function pause() { paused.value = true }
 
   function resume() {
     paused.value = false
@@ -44,16 +43,13 @@ export function useMjmlCompiler() {
     [() => JSON.stringify(editorStore.tree), () => JSON.stringify(headStore.settings)],
     () => {
       if (debounceTimer) clearTimeout(debounceTimer)
-      if (paused.value) {
-        pendingCompile = true
-        return
-      }
+      if (paused.value) { pendingCompile = true; return }
       debounceTimer = setTimeout(compile, 150)
     },
-    { immediate: true }
+    { immediate: true },
   )
 
-  const mjmlSource = computed(() => serialize(editorStore.tree, headStore.settings, { mode: 'preview' }))
+  const mjmlSource = computed(() => buildFullMjml(editorStore.tree, headStore.settings))
 
   return { compiledHtml, compileError, mjmlSource, pause, resume }
-}
+})

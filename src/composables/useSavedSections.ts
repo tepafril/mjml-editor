@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import type { EditorNode } from '@/types/node.types'
-import { serializeToMjml } from '@/utils/mjmlSerializer'
+import { serializeNode } from '@/features/import-export'
 // @ts-expect-error mjml-browser has no types
 import mjml2html from 'mjml-browser'
 
@@ -18,7 +18,7 @@ export interface SavedSection {
 
 function generatePreviewHtml(node: EditorNode): string {
   try {
-    const nodeMjml = serializeToMjml(node, 2)
+    const nodeMjml = serializeNode(node, 2, { mode: 'preview' })
     let bodyContent: string
     if (['mj-section', 'mj-wrapper', 'mj-hero'].includes(node.type)) {
       bodyContent = nodeMjml

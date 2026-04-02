@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useHeadStore } from '@/stores/head.store'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import UnitInput from '@/components/ui/UnitInput.vue'
 import ColorPicker from '@/components/ui/ColorPicker.vue'
 import CssClassInput from '@/components/ui/CssClassInput.vue'
@@ -11,7 +11,7 @@ import { useImportExport } from '@/composables/useImportExport'
 import { GOOGLE_FONTS_TOP_100, buildGoogleFontUrl, type GoogleFontEntry } from '@/config/googleFonts'
 
 const headStore = useHeadStore()
-const editorStore = useEditorStore()
+const editor = useEditor()
 const { exportMjml, exportTemplateHtml, importMjml } = useImportExport()
 
 type TabKey = 'body' | 'meta' | 'fonts' | 'defaults' | 'css' | 'html-attrs' | 'import-export'
@@ -36,13 +36,13 @@ const tabs = [
   { key: 'import-export' as const, label: 'Import / Export', icon: FolderInput },
 ]
 
-const bodyNode = computed(() => editorStore.tree)
+const bodyNode = computed(() => editor.tree)
 const bodyBgColor = computed(() => bodyNode.value.props['background-color'] ?? '')
 const bodyWidth = computed(() => bodyNode.value.props['width'] ?? '')
 const bodyCssClass = computed(() => bodyNode.value.props['css-class'] ?? '')
 
 function updateBodyProp(prop: string, value: string) {
-  editorStore.updateNodeProps(bodyNode.value.id, { [prop]: value })
+  editor.updateProps(bodyNode.value.id, { [prop]: value })
 }
 
 // --- Fonts ---

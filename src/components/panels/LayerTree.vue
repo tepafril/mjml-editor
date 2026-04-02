@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import LayerItem from './LayerItem.vue'
 
-const editorStore = useEditorStore()
+const editor = useEditor()
 </script>
 
 <template>
@@ -11,7 +11,7 @@ const editorStore = useEditorStore()
       Layers
     </div>
     <LayerItem
-      v-for="node in editorStore.tree.children"
+      v-for="node in editor.tree.children"
       :key="node.id"
       :node="node"
       :depth="0"

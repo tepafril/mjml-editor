@@ -1,0 +1,1319 @@
+{
+  "summary": {
+    "total_unique_attributes": 114,
+    "total_components": 33
+  },
+  "attributes": [
+    {
+      "attribute": "(any component tag)",
+      "accepts": "any component attributes",
+      "default": null,
+      "description": "Set default attributes for that component",
+      "components": [
+        "mj-attributes"
+      ]
+    },
+    {
+      "attribute": "align",
+      "accepts": "left | center | right | justify",
+      "default": "left",
+      "description": "Text horizontal alignment",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-table",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "alt",
+      "accepts": "string",
+      "default": "''",
+      "description": "Image alt text",
+      "components": [
+        "mj-image",
+        "mj-social-element",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "background-color",
+      "accepts": "CSS color",
+      "default": null,
+      "description": "General background color",
+      "components": [
+        "mj-body",
+        "mj-section",
+        "mj-column",
+        "mj-group",
+        "mj-wrapper",
+        "mj-button",
+        "mj-hero",
+        "mj-social-element",
+        "mj-accordion-element",
+        "mj-accordion-title",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "background-height",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Height of background image (mandatory)",
+      "components": [
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "background-position",
+      "accepts": "string",
+      "default": "top center",
+      "description": "CSS background-position (e.g. left top)",
+      "components": [
+        "mj-section",
+        "mj-wrapper",
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "background-position-x",
+      "accepts": "string",
+      "default": null,
+      "description": "Horizontal background position",
+      "components": [
+        "mj-section",
+        "mj-wrapper"
+      ]
+    },
+    {
+      "attribute": "background-position-y",
+      "accepts": "string",
+      "default": null,
+      "description": "Vertical background position",
+      "components": [
+        "mj-section",
+        "mj-wrapper"
+      ]
+    },
+    {
+      "attribute": "background-repeat",
+      "accepts": "repeat | no-repeat",
+      "default": null,
+      "description": "Background image repeat",
+      "components": [
+        "mj-section",
+        "mj-wrapper"
+      ]
+    },
+    {
+      "attribute": "background-size",
+      "accepts": "string",
+      "default": "auto",
+      "description": "CSS background-size (auto, cover, contain, px, %)",
+      "components": [
+        "mj-section",
+        "mj-wrapper"
+      ]
+    },
+    {
+      "attribute": "background-url",
+      "accepts": "string (URL)",
+      "default": null,
+      "description": "Background image URL",
+      "components": [
+        "mj-section",
+        "mj-wrapper",
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "background-width",
+      "accepts": "px | %",
+      "default": "parent width",
+      "description": "Width of background image (mandatory)",
+      "components": [
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "base-url",
+      "accepts": "string",
+      "default": "null",
+      "description": "Base URL prepended to child links",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "border",
+      "accepts": "string",
+      "default": null,
+      "description": "CSS border format",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image",
+        "mj-table",
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "border-bottom",
+      "accepts": "string",
+      "default": null,
+      "description": "Bottom border",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "border-color",
+      "accepts": "CSS color",
+      "default": "#000000",
+      "description": "Divider color",
+      "components": [
+        "mj-divider"
+      ]
+    },
+    {
+      "attribute": "border-left",
+      "accepts": "string",
+      "default": null,
+      "description": "Left border",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "border-radius",
+      "accepts": "string",
+      "default": null,
+      "description": "Border radius",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-carousel",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "border-right",
+      "accepts": "string",
+      "default": null,
+      "description": "Right border",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "border-style",
+      "accepts": "string",
+      "default": "solid",
+      "description": "CSS border style (dashed, dotted, solid)",
+      "components": [
+        "mj-divider"
+      ]
+    },
+    {
+      "attribute": "border-top",
+      "accepts": "string",
+      "default": null,
+      "description": "Top border",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-button",
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "border-width",
+      "accepts": "px",
+      "default": "4px",
+      "description": "Divider border width",
+      "components": [
+        "mj-divider"
+      ]
+    },
+    {
+      "attribute": "cellpadding",
+      "accepts": "px",
+      "default": null,
+      "description": "Space between cells",
+      "components": [
+        "mj-table"
+      ]
+    },
+    {
+      "attribute": "cellspacing",
+      "accepts": "px",
+      "default": null,
+      "description": "Space within cells",
+      "components": [
+        "mj-table"
+      ]
+    },
+    {
+      "attribute": "color",
+      "accepts": "CSS color",
+      "default": "#000000",
+      "description": "Text color",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-table",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-accordion-title",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "container-background-color",
+      "accepts": "CSS color",
+      "default": null,
+      "description": "Background color of the cell",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-social",
+        "mj-accordion",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "css-class",
+      "accepts": "string",
+      "default": null,
+      "description": "Class name added to root HTML element",
+      "components": [
+        "mj-body",
+        "mj-section",
+        "mj-column",
+        "mj-group",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-element",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "css-inline",
+      "accepts": "inline",
+      "default": null,
+      "description": "Inline the included CSS",
+      "components": [
+        "mj-include"
+      ]
+    },
+    {
+      "attribute": "dir",
+      "accepts": "string",
+      "default": "auto",
+      "description": "Adds dir attribute to html and body > div tags",
+      "components": [
+        "mjml"
+      ]
+    },
+    {
+      "attribute": "direction",
+      "accepts": "ltr | rtl",
+      "default": "ltr",
+      "description": "Display order of child columns",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-group"
+      ]
+    },
+    {
+      "attribute": "fluid-on-mobile",
+      "accepts": "boolean",
+      "default": null,
+      "description": "Full width on mobile even if width is set",
+      "components": [
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "font-family",
+      "accepts": "string",
+      "default": "Ubuntu, Helvetica, Arial, sans-serif",
+      "description": "Font family",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-table",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-element",
+        "mj-accordion-title",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "font-size",
+      "accepts": "px",
+      "default": "13px",
+      "description": "Font size",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-table",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-accordion-title",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "font-style",
+      "accepts": "string",
+      "default": null,
+      "description": "CSS font-style (normal, italic, oblique)",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link"
+      ]
+    },
+    {
+      "attribute": "font-weight",
+      "accepts": "string",
+      "default": null,
+      "description": "Font weight",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-accordion-title",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "full-width",
+      "accepts": "full-width",
+      "default": null,
+      "description": "Expands section to 100% width",
+      "components": [
+        "mj-section",
+        "mj-wrapper"
+      ]
+    },
+    {
+      "attribute": "hamburger",
+      "accepts": "hamburger",
+      "default": "null",
+      "description": "Activates hamburger mode on mobile",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "height",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Text block height",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-spacer",
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "href",
+      "accepts": "string (URL)",
+      "default": null,
+      "description": "URL of a hosted CSS file with @font-face declaration",
+      "components": [
+        "mj-font",
+        "mj-button",
+        "mj-image",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "ico-align",
+      "accepts": "left | center | right",
+      "default": "center",
+      "description": "Hamburger icon alignment (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-close",
+      "accepts": "string",
+      "default": "⊗",
+      "description": "Char code for close icon (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-color",
+      "accepts": "CSS color",
+      "default": "#000000",
+      "description": "Hamburger icon color (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-font-family",
+      "accepts": "string",
+      "default": "Ubuntu, Helvetica, Arial, sans-serif",
+      "description": "Hamburger icon font (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-font-size",
+      "accepts": "px | %",
+      "default": "30px",
+      "description": "Hamburger icon size (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-line-height",
+      "accepts": "px | %",
+      "default": "30px",
+      "description": "Hamburger icon line height (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-open",
+      "accepts": "string",
+      "default": "☰",
+      "description": "Char code for open icon (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-padding",
+      "accepts": "px | %",
+      "default": "10px",
+      "description": "Hamburger icon padding (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-padding-bottom",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Hamburger icon bottom padding (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-padding-left",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Hamburger icon left padding (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-padding-right",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Hamburger icon right padding (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-padding-top",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Hamburger icon top padding (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-text-decoration",
+      "accepts": "string",
+      "default": "none",
+      "description": "Hamburger icon text decoration (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "ico-text-transform",
+      "accepts": "string",
+      "default": "uppercase",
+      "description": "Hamburger icon text transform (requires hamburger)",
+      "components": [
+        "mj-navbar"
+      ]
+    },
+    {
+      "attribute": "icon-align",
+      "accepts": "top | middle | bottom",
+      "default": "middle",
+      "description": "Icon alignment",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-height",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Icon height (overrides icon-size if set)",
+      "components": [
+        "mj-social",
+        "mj-social-element",
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-padding",
+      "accepts": "px | %",
+      "default": "0px",
+      "description": "Icon padding",
+      "components": [
+        "mj-social"
+      ]
+    },
+    {
+      "attribute": "icon-position",
+      "accepts": "left | right",
+      "default": "right",
+      "description": "Icon position",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-size",
+      "accepts": "px | %",
+      "default": "20px",
+      "description": "Icon size",
+      "components": [
+        "mj-social",
+        "mj-social-element"
+      ]
+    },
+    {
+      "attribute": "icon-unwrapped-alt",
+      "accepts": "string",
+      "default": "-",
+      "description": "Alt text when accordion is unwrapped",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-unwrapped-url",
+      "accepts": "string (URL)",
+      "default": "https://i.imgur.com/w4uTygT.png",
+      "description": "Icon URL when unwrapped",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-width",
+      "accepts": "px | %",
+      "default": "32px",
+      "description": "Icon width",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "icon-wrapped-alt",
+      "accepts": "string",
+      "default": "+",
+      "description": "Alt text when accordion is wrapped",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "icon-wrapped-url",
+      "accepts": "string (URL)",
+      "default": "https://i.imgur.com/bIXv1bk.png",
+      "description": "Icon URL when wrapped",
+      "components": [
+        "mj-accordion",
+        "mj-accordion-element"
+      ]
+    },
+    {
+      "attribute": "inline",
+      "accepts": "inline",
+      "default": null,
+      "description": "Set to `inline` to inline the styles into HTML elements",
+      "components": [
+        "mj-style"
+      ]
+    },
+    {
+      "attribute": "inner-background-color",
+      "accepts": "CSS color",
+      "default": null,
+      "description": "Inner background color (requires padding)",
+      "components": [
+        "mj-column",
+        "mj-hero"
+      ]
+    },
+    {
+      "attribute": "inner-border",
+      "accepts": "string",
+      "default": null,
+      "description": "Inner border (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-border-bottom",
+      "accepts": "string",
+      "default": null,
+      "description": "Inner bottom border (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-border-left",
+      "accepts": "string",
+      "default": null,
+      "description": "Inner left border (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-border-radius",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Inner border radius (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-border-right",
+      "accepts": "string",
+      "default": null,
+      "description": "Inner right border (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-border-top",
+      "accepts": "string",
+      "default": null,
+      "description": "Inner top border (requires padding)",
+      "components": [
+        "mj-column"
+      ]
+    },
+    {
+      "attribute": "inner-padding",
+      "accepts": "px | %",
+      "default": "10px 25px",
+      "description": "Inner button padding (up to 4 values)",
+      "components": [
+        "mj-button",
+        "mj-social",
+        "mj-social-element"
+      ]
+    },
+    {
+      "attribute": "lang",
+      "accepts": "string",
+      "default": "und",
+      "description": "Adds lang attribute to html and body > div tags",
+      "components": [
+        "mjml"
+      ]
+    },
+    {
+      "attribute": "left-icon",
+      "accepts": "string (URL)",
+      "default": "https://i.imgur.com/xTh3hln.png",
+      "description": "Left navigation icon URL",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "letter-spacing",
+      "accepts": "px | em",
+      "default": "none",
+      "description": "Letter spacing",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-navbar-link",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "line-height",
+      "accepts": "px | %",
+      "default": "22px",
+      "description": "Line height",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-table",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-accordion-text"
+      ]
+    },
+    {
+      "attribute": "max-height",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Maximum image height",
+      "components": [
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "mj-all",
+      "accepts": "any",
+      "default": null,
+      "description": "Applies attribute defaults to all components",
+      "components": [
+        "mj-attributes"
+      ]
+    },
+    {
+      "attribute": "mj-class name",
+      "accepts": "string",
+      "default": null,
+      "description": "Named class applied via mj-class attribute",
+      "components": [
+        "mj-attributes"
+      ]
+    },
+    {
+      "attribute": "mj-html-attribute name",
+      "accepts": "string",
+      "default": null,
+      "description": "Attribute name to add to matched HTML elements",
+      "components": [
+        "mj-html-attributes"
+      ]
+    },
+    {
+      "attribute": "mj-selector path",
+      "accepts": "CSS selector string",
+      "default": null,
+      "description": "CSS selector targeting generated HTML elements",
+      "components": [
+        "mj-html-attributes"
+      ]
+    },
+    {
+      "attribute": "mode",
+      "accepts": "fluid-height | fixed-height",
+      "default": "fluid-height",
+      "description": "Hero display mode",
+      "components": [
+        "mj-hero",
+        "mj-social"
+      ]
+    },
+    {
+      "attribute": "name",
+      "accepts": "string",
+      "default": null,
+      "description": "Name of the font",
+      "components": [
+        "mj-font",
+        "mj-button",
+        "mj-image",
+        "mj-social-element",
+        "mj-navbar-link"
+      ]
+    },
+    {
+      "attribute": "owa",
+      "accepts": "string",
+      "default": "none",
+      "description": "Set to `desktop` to force desktop view for older Outlook.com versions",
+      "components": [
+        "mjml"
+      ]
+    },
+    {
+      "attribute": "padding",
+      "accepts": "px | %",
+      "default": "20px 0",
+      "description": "Section padding (up to 4 values)",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "padding-bottom",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Bottom padding",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "padding-left",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Left padding",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "padding-right",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Right padding",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "padding-top",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Top padding",
+      "components": [
+        "mj-section",
+        "mj-column",
+        "mj-wrapper",
+        "mj-text",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-spacer",
+        "mj-table",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar",
+        "mj-navbar-link",
+        "mj-accordion",
+        "mj-accordion-title",
+        "mj-accordion-text",
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "path",
+      "accepts": "string",
+      "default": null,
+      "description": "Path to the external file (required)",
+      "components": [
+        "mj-include"
+      ]
+    },
+    {
+      "attribute": "position",
+      "accepts": "file-start",
+      "default": null,
+      "description": "When set, adds content at the very beginning of the file (before doctype). Must be at the mjml root level.",
+      "components": [
+        "mj-raw"
+      ]
+    },
+    {
+      "attribute": "rel",
+      "accepts": "string",
+      "default": null,
+      "description": "Rel attribute for the link",
+      "components": [
+        "mj-button",
+        "mj-image",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "right-icon",
+      "accepts": "string (URL)",
+      "default": "https://i.imgur.com/os7o9kz.png",
+      "description": "Right navigation icon URL",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "role",
+      "accepts": "none | presentation",
+      "default": null,
+      "description": "ARIA role",
+      "components": [
+        "mj-table"
+      ]
+    },
+    {
+      "attribute": "sizes",
+      "accepts": "string",
+      "default": null,
+      "description": "Set width based on media query",
+      "components": [
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "src",
+      "accepts": "string (URL)",
+      "default": null,
+      "description": "Image source URL",
+      "components": [
+        "mj-image",
+        "mj-social-element",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "srcset",
+      "accepts": "string",
+      "default": null,
+      "description": "Responsive image source set (CSS syntax)",
+      "components": [
+        "mj-image",
+        "mj-social-element"
+      ]
+    },
+    {
+      "attribute": "table-layout",
+      "accepts": "auto | fixed | initial | inherit",
+      "default": "auto",
+      "description": "Table layout algorithm",
+      "components": [
+        "mj-table"
+      ]
+    },
+    {
+      "attribute": "target",
+      "accepts": "string",
+      "default": "_blank",
+      "description": "Link target",
+      "components": [
+        "mj-button",
+        "mj-image",
+        "mj-social-element",
+        "mj-navbar-link",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "tb-border",
+      "accepts": "string",
+      "default": "2px solid transparent",
+      "description": "Thumbnail border",
+      "components": [
+        "mj-carousel",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "tb-border-radius",
+      "accepts": "px | %",
+      "default": "6px",
+      "description": "Thumbnail border radius",
+      "components": [
+        "mj-carousel",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "tb-hover-border-color",
+      "accepts": "CSS color",
+      "default": "#fead0d",
+      "description": "Hovered thumbnail border color",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "tb-selected-border-color",
+      "accepts": "CSS color",
+      "default": "#ccc",
+      "description": "Selected thumbnail border color",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "tb-width",
+      "accepts": "px | %",
+      "default": null,
+      "description": "Thumbnail width",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "text-align",
+      "accepts": "left | center | right",
+      "default": "center",
+      "description": "Text alignment",
+      "components": [
+        "mj-section",
+        "mj-wrapper",
+        "mj-button"
+      ]
+    },
+    {
+      "attribute": "text-decoration",
+      "accepts": "string",
+      "default": null,
+      "description": "CSS text-decoration",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-social",
+        "mj-social-element",
+        "mj-navbar-link"
+      ]
+    },
+    {
+      "attribute": "text-transform",
+      "accepts": "string",
+      "default": null,
+      "description": "CSS text-transform",
+      "components": [
+        "mj-text",
+        "mj-button",
+        "mj-navbar-link"
+      ]
+    },
+    {
+      "attribute": "thumbnails",
+      "accepts": "visible | hidden | supported",
+      "default": "hidden",
+      "description": "Thumbnail display mode",
+      "components": [
+        "mj-carousel"
+      ]
+    },
+    {
+      "attribute": "thumbnails-src",
+      "accepts": "string (URL)",
+      "default": null,
+      "description": "Custom thumbnail image URL",
+      "components": [
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "title",
+      "accepts": "string",
+      "default": null,
+      "description": "Tooltip and accessibility",
+      "components": [
+        "mj-button",
+        "mj-image",
+        "mj-social-element",
+        "mj-carousel-image"
+      ]
+    },
+    {
+      "attribute": "type",
+      "accepts": "css | html",
+      "default": null,
+      "description": "Specify file type when including non-MJML files",
+      "components": [
+        "mj-include"
+      ]
+    },
+    {
+      "attribute": "usemap",
+      "accepts": "string",
+      "default": null,
+      "description": "Reference to image map (not widely supported)",
+      "components": [
+        "mj-image"
+      ]
+    },
+    {
+      "attribute": "vertical-align",
+      "accepts": "top | middle | bottom",
+      "default": "top",
+      "description": "Vertical alignment (middle applies only when all columns use it)",
+      "components": [
+        "mj-column",
+        "mj-group",
+        "mj-button",
+        "mj-hero",
+        "mj-social",
+        "mj-social-element"
+      ]
+    },
+    {
+      "attribute": "width",
+      "accepts": "px",
+      "default": "600px",
+      "description": "Email width",
+      "components": [
+        "mj-body",
+        "mj-breakpoint",
+        "mj-column",
+        "mj-group",
+        "mj-button",
+        "mj-image",
+        "mj-divider",
+        "mj-table"
+      ]
+    }
+  ]
+}

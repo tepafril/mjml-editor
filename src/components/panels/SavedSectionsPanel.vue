@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { Trash2, LayoutTemplate } from 'lucide-vue-next'
 import { useSavedSections } from '@/composables/useSavedSections'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import { useDragDrop } from '@/composables/useDragDrop'
 
 const { savedSections, deleteSection, cloneNode } = useSavedSections()
-const editorStore = useEditorStore()
+const editor = useEditor()
 const { onDragStart, onDragEnd } = useDragDrop()
 
 function loadSection(id: string) {
   const section = savedSections.value.find(s => s.id === id)
   if (!section) return
   const node = cloneNode(section)
-  editorStore.insertNode(node, editorStore.tree.id, editorStore.tree.children.length)
-  editorStore.selectNode(node.id)
+  editor.insertNode(node, editor.tree.id, editor.tree.children.length)
+  editor.select(node.id)
 }
 
 function formatDate(ts: number): string {

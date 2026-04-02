@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import { createNode } from '@/utils/defaultProps'
 import { ALLOWED_CHILDREN } from '@/types/node.types'
 import UnitInput from '@/components/ui/UnitInput.vue'
@@ -12,8 +12,8 @@ import SpacingControl from './SpacingControl.vue'
 import { Plus, Trash2, Repeat, GitBranch, Braces } from 'lucide-vue-next'
 import VariablePicker from './VariablePicker.vue'
 
-const editorStore = useEditorStore()
-const node = computed(() => editorStore.selectedNode)
+const editor = useEditor()
+const node = computed(() => editor.selectedNode)
 
 const HAS_CONTENT = new Set<string>([
   'mj-text', 'mj-heading', 'mj-button',
@@ -50,12 +50,12 @@ const SOCIAL_NETWORKS = [
 
 function updateProp(key: string, value: string) {
   if (!node.value) return
-  editorStore.updateNodeProps(node.value.id, { [key]: value })
+  editor.updateProps(node.value.id, { [key]: value })
 }
 
 function updateContent(value: string) {
   if (!node.value) return
-  editorStore.updateNodeContent(node.value.id, value)
+  editor.updateContent(node.value.id, value)
 }
 
 function addChild() {
@@ -64,11 +64,11 @@ function addChild() {
   if (!allowed || allowed.length === 0) return
   const childType = allowed[0]
   const child = createNode(childType)
-  editorStore.insertNode(child, node.value.id, node.value.children.length)
+  editor.insertNode(child, node.value.id, node.value.children.length)
 }
 
 function removeChild(childId: string) {
-  editorStore.removeNode(childId)
+  editor.removeNode(childId)
 }
 
 const HAS_FOREACH = new Set<string>([
@@ -78,12 +78,12 @@ const HAS_FOREACH = new Set<string>([
 function insertVariable(variable: string) {
   if (!node.value) return
   const current = node.value.content || ''
-  editorStore.updateNodeContent(node.value.id, current + variable)
+  editor.updateContent(node.value.id, current + variable)
 }
 
 function updateTemplateLogic(key: string, value: string) {
   if (!node.value) return
-  editorStore.updateNodeTemplateLogic(node.value.id, { [key]: value })
+  editor.updateTemplateLogic(node.value.id, { [key]: value })
 }
 
 const childTypeName = computed(() => {
@@ -642,7 +642,7 @@ const childTypeName = computed(() => {
       >
         <span
           class="truncate cursor-pointer hover:text-indigo-600"
-          @click="editorStore.selectNode(child.id)"
+          @click="editor.select(child.id)"
         >
           {{ child.content || child.props.name || child.type.replace('mj-', '') }}
         </span>

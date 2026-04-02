@@ -1,13 +1,11 @@
 import { ref, computed } from 'vue'
-import { useEditorStore } from '@/stores/editor.store'
-import { useHeadStore } from '@/stores/head.store'
-import { deserializeFromMjml } from '@/utils/mjmlDeserializer'
+import { useEditor } from '@/composables/useEditor'
+import { deserialize } from '@/features/import-export'
 import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/config/templates/index'
 import type { TemplateCategory } from '@/types/template.types'
 
 export function useTemplates() {
-  const editorStore = useEditorStore()
-  const headStore = useHeadStore()
+  const editor = useEditor()
 
   const search = ref('')
   const activeCategory = ref<TemplateCategory | 'All'>('All')
@@ -23,9 +21,8 @@ export function useTemplates() {
   )
 
   function loadTemplate(mjml: string) {
-    const { tree, head } = deserializeFromMjml(mjml)
-    editorStore.loadTree(tree)
-    headStore.loadSettings(head)
+    const { tree, head } = deserialize(mjml)
+    editor.loadTree(tree, head)
   }
 
   return { search, activeCategory, filtered, loadTemplate, TEMPLATE_CATEGORIES }

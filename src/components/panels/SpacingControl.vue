@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import type { EditorNode } from '@/types/node.types'
 
 const props = defineProps<{
   node: EditorNode
 }>()
 
-const editorStore = useEditorStore()
+const editor = useEditor()
 
 function parsePadding(padding: string) {
   const parts = (padding || '0').split(/\s+/)
@@ -23,7 +23,7 @@ function updatePadding(side: string, value: string) {
   const p = parsePadding(props.node.props.padding || '')
   ;(p as Record<string, string>)[side] = value
   const newPadding = `${p.top} ${p.right} ${p.bottom} ${p.left}`
-  editorStore.updateNodeProps(props.node.id, { padding: newPadding })
+  editor.updateProps(props.node.id, { padding: newPadding })
 }
 </script>
 

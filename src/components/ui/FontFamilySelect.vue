@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useHeadStore } from '@/stores/head.store'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import AutoComplete from 'primevue/autocomplete'
 import { Settings } from 'lucide-vue-next'
 
@@ -15,10 +15,10 @@ const emit = defineEmits<{
 }>()
 
 const headStore = useHeadStore()
-const editorStore = useEditorStore()
+const editor = useEditor()
 
 function openFontSettings() {
-  editorStore.requestOpenSettings('fonts')
+  editor.requestOpenSettings('fonts')
 }
 
 const allFonts = computed(() =>

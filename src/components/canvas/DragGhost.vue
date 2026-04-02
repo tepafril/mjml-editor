@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDragStore } from '@/stores/drag.store'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import { treeUtils } from '@/utils/treeUtils'
 import { useSavedSections } from '@/composables/useSavedSections'
 import {
@@ -12,7 +12,7 @@ import {
 } from 'lucide-vue-next'
 
 const dragStore = useDragStore()
-const editorStore = useEditorStore()
+const editor = useEditor()
 const { savedSections } = useSavedSections()
 
 const ICON_MAP: Record<string, any> = {
@@ -64,7 +64,7 @@ const resolvedType = computed(() => {
   if (!source) return null
   if (source.nodeType) return source.nodeType
   if (source.nodeId) {
-    const node = treeUtils.findById(editorStore.tree, source.nodeId)
+    const node = treeUtils.findById(editor.tree, source.nodeId)
     return node?.type || null
   }
   if (source.savedSectionId) {

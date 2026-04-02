@@ -1,13 +1,13 @@
 import type { EditorNode } from '@/types/node.types'
 import type { HeadSettings } from '@/types/mjml.types'
-import { buildFullMjml } from './mjmlSerializer'
+import { serialize } from '@/features/import-export'
 import { flatten } from './treeUtils'
 // @ts-expect-error mjml-browser has no types
 import mjml2html from 'mjml-browser'
 
 export function buildTemplateHtml(root: EditorNode, head?: HeadSettings): string {
   // Step 1: Build MJML with css-class="node-{id}" markers
-  const mjml = buildFullMjml(root, head)
+  const mjml = serialize(root, head, { mode: 'preview' })
 
   // Step 2: Compile MJML to HTML
   const { html } = mjml2html(mjml)

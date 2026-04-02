@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useEditorStore } from '@/stores/editor.store'
-import { usePreviewStore, type PreviewMode } from '@/stores/preview.store'
-import { useHeadStore } from '@/stores/head.store'
+import { useEditor } from '@/composables/useEditor'
 import type { HeadSettings } from '@/types/mjml.types'
+import type { PreviewMode } from '@/stores/preview.store'
 import IconButton from '@/components/ui/IconButton.vue'
 import EmailSettingsPanel from '@/components/panels/EmailSettingsPanel.vue'
 import TemplatesPanel from '@/components/panels/TemplatesPanel.vue'
@@ -12,50 +11,38 @@ import {
   Undo2, Redo2, Monitor, Smartphone, Code, FileCode, Settings, Grid3x3, LayoutTemplate
 } from 'lucide-vue-next'
 
-const editorStore = useEditorStore()
-const previewStore = usePreviewStore()
-const headStore = useHeadStore()
+const editor = useEditor()
 
 const settingsOpen = ref(false)
 const templatesOpen = ref(false)
 
-// Snapshots taken when dialog opens, used for cancel/revert
 let headSnapshot: HeadSettings | null = null
 let bodyPropsSnapshot: Record<string, string> | null = null
-
 const settingsInitialTab = ref<string | undefined>()
 
 function openSettings(tab?: string) {
-  // Snapshot current state before editing
-  headSnapshot = JSON.parse(JSON.stringify(headStore.settings))
-  bodyPropsSnapshot = JSON.parse(JSON.stringify(editorStore.tree.props))
+  headSnapshot = JSON.parse(JSON.stringify(editor.head.settings))
+  bodyPropsSnapshot = JSON.parse(JSON.stringify(editor.tree.props))
   settingsInitialTab.value = tab
   settingsOpen.value = true
 }
 
-// Watch for global requests to open settings
-watch(() => editorStore.openSettingsTab, (tab) => {
+watch(() => editor.openSettingsTab, (tab) => {
   if (tab) {
     openSettings(tab)
-    editorStore.openSettingsTab = null
+    editor.clearOpenSettingsTab()
   }
 })
 
 function saveSettings() {
-  // Just close — changes are already applied in real-time
   headSnapshot = null
   bodyPropsSnapshot = null
   settingsOpen.value = false
 }
 
 function cancelSettings() {
-  // Restore snapshots
-  if (headSnapshot) {
-    headStore.loadSettings(headSnapshot)
-  }
-  if (bodyPropsSnapshot) {
-    editorStore.updateNodeProps(editorStore.tree.id, bodyPropsSnapshot)
-  }
+  if (headSnapshot) editor.head.loadSettings(headSnapshot)
+  if (bodyPropsSnapshot) editor.revertBodyProps(bodyPropsSnapshot)
   headSnapshot = null
   bodyPropsSnapshot = null
   settingsOpen.value = false
@@ -75,35 +62,26 @@ const previewModes: { value: PreviewMode; icon: unknown; title: string }[] = [
     <span class="font-bold text-indigo-600 mr-3 text-sm tracking-tight">SyncMusic</span>
 
     <!-- History -->
-    <IconButton
-      @click="editorStore.undo()"
-      :disabled="!editorStore.canUndo"
-      title="Undo (Cmd+Z)"
-    >
+    <IconButton @click="editor.undo()" :disabled="!editor.canUndo" title="Undo (Cmd+Z)">
       <Undo2 class="w-4 h-4" />
     </IconButton>
-    <IconButton
-      @click="editorStore.redo()"
-      :disabled="!editorStore.canRedo"
-      title="Redo (Cmd+Shift+Z)"
-    >
+    <IconButton @click="editor.redo()" :disabled="!editor.canRedo" title="Redo (Cmd+Shift+Z)">
       <Redo2 class="w-4 h-4" />
     </IconButton>
 
-    <!-- Spacer -->
     <div class="flex-1" />
 
-    <!-- Preview modes (centered) -->
+    <!-- Preview modes -->
     <div class="flex border border-gray-200 rounded-md overflow-hidden">
       <button
         v-for="mode in previewModes"
         :key="mode.value"
         class="flex items-center justify-center w-8 h-7 transition-colors"
-        :class="previewStore.mode === mode.value
+        :class="editor.preview.mode === mode.value
           ? 'bg-indigo-50 text-indigo-600'
           : 'text-gray-500 hover:bg-gray-50'"
         :title="mode.title"
-        @click="previewStore.mode = mode.value"
+        @click="editor.preview.mode = mode.value"
       >
         <component :is="mode.icon" class="w-3.5 h-3.5" />
       </button>
@@ -111,16 +89,12 @@ const previewModes: { value: PreviewMode; icon: unknown; title: string }[] = [
 
     <!-- Grid toggle -->
     <IconButton
-      @click="previewStore.showGridLines = !previewStore.showGridLines"
-      :title="previewStore.showGridLines ? 'Hide grid lines' : 'Show grid lines'"
+      @click="editor.preview.showGridLines = !editor.preview.showGridLines"
+      :title="editor.preview.showGridLines ? 'Hide grid lines' : 'Show grid lines'"
     >
-      <Grid3x3
-        class="w-4 h-4"
-        :class="previewStore.showGridLines ? 'text-indigo-600' : ''"
-      />
+      <Grid3x3 class="w-4 h-4" :class="editor.preview.showGridLines ? 'text-indigo-600' : ''" />
     </IconButton>
 
-    <!-- Spacer -->
     <div class="flex-1" />
 
     <!-- Templates button -->
@@ -185,15 +159,13 @@ const previewModes: { value: PreviewMode; icon: unknown; title: string }[] = [
         <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200 w-full">
           <button
             @click="cancelSettings"
-            class="px-4 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md
-                   hover:bg-gray-50 transition-colors"
+            class="px-4 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             @click="saveSettings"
-            class="px-4 py-2 text-xs font-medium text-white bg-indigo-600 rounded-md
-                   hover:bg-indigo-700 transition-colors"
+            class="px-4 py-2 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
           >
             Save
           </button>

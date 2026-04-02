@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useEditorStore } from '@/stores/editor.store'
+import { useEditor } from '@/composables/useEditor'
 import type { EditorNode } from '@/types/node.types'
 import {
   ChevronRight, ChevronDown, Eye, EyeOff, Trash2,
@@ -16,59 +16,39 @@ const props = defineProps<{
   depth: number
 }>()
 
-const editorStore = useEditorStore()
+const editor = useEditor()
 const expanded = ref(true)
 
 const hasChildren = computed(() => props.node.children.length > 0)
-const isSelected = computed(() => editorStore.selectedId === props.node.id)
-const isHovered = computed(() => editorStore.hoveredId === props.node.id)
+const isSelected = computed(() => editor.selectedId === props.node.id)
+const isHovered = computed(() => editor.hoveredId === props.node.id)
 
-const ICON_MAP: Record<string, any> = {
-  'mj-text': Type,
-  'mj-heading': Heading,
-  'mj-button': MousePointer,
-  'mj-image': Image,
-  'mj-avatar': User,
-  'mj-divider': Minus,
-  'mj-spacer': ChevronsUpDown,
-  'mj-section': Rows3,
-  'mj-column': Columns3,
-  'mj-wrapper': LayoutTemplate,
-  'mj-hero': RectangleHorizontal,
-  'mj-social': Share2,
-  'mj-social-element': Link,
-  'mj-navbar': Navigation,
-  'mj-navbar-link': Link,
-  'mj-group': Group,
-  'mj-table': Table,
-  'mj-raw': Code,
+const ICON_MAP: Record<string, unknown> = {
+  'mj-text': Type, 'mj-heading': Heading, 'mj-button': MousePointer,
+  'mj-image': Image, 'mj-avatar': User, 'mj-divider': Minus,
+  'mj-spacer': ChevronsUpDown, 'mj-section': Rows3, 'mj-column': Columns3,
+  'mj-wrapper': LayoutTemplate, 'mj-hero': RectangleHorizontal,
+  'mj-social': Share2, 'mj-social-element': Link, 'mj-navbar': Navigation,
+  'mj-navbar-link': Link, 'mj-group': Group, 'mj-table': Table, 'mj-raw': Code,
 }
 
 const nodeIcon = computed(() => ICON_MAP[props.node.type] || Type)
 
-function toggle() {
-  expanded.value = !expanded.value
-}
-
-function toggleVisibility() {
-  props.node.hidden = !props.node.hidden
-}
-
-
+function toggle() { expanded.value = !expanded.value }
+function toggleVisibility() { props.node.hidden = !props.node.hidden }
 </script>
 
 <template>
   <div>
     <div
-      class="flex items-center py-0.5 cursor-pointer text-xs
-             hover:bg-gray-50 group transition-colors"
+      class="flex items-center py-0.5 cursor-pointer text-xs hover:bg-gray-50 group transition-colors"
       :class="{
         'bg-indigo-50 text-indigo-700': isSelected,
         'ring-1 ring-indigo-300': isHovered && !isSelected,
       }"
-      @click="editorStore.selectNode(node.id)"
-      @mouseenter="editorStore.hoverNode(node.id)"
-      @mouseleave="editorStore.hoverNode(null)"
+      @click="editor.select(node.id)"
+      @mouseenter="editor.hover(node.id)"
+      @mouseleave="editor.hover(null)"
     >
       <button
         class="w-5 shrink-0 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -100,7 +80,7 @@ function toggleVisibility() {
       <button
         v-if="node.type !== 'mj-body'"
         class="w-5 shrink-0 flex items-center justify-center text-gray-400 hover:text-red-600 cursor-pointer"
-        @click.stop="editorStore.removeNode(node.id)"
+        @click.stop="editor.removeNode(node.id)"
         title="Delete"
       >
         <Trash2 class="w-3 h-3" />
