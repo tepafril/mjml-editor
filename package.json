@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
+  "homepage": "https://tepafril.github.io/mjml-editor/",
   "dependencies": {
     "@primevue/themes": "^4.5.4",
     "lucide-vue-next": "^0.577.0",
