@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 const INLINE_EDITABLE_TYPES = new Set([
   'mj-text', 'mj-heading', 'mj-button',
@@ -173,11 +173,9 @@ function stopInlineEdit() {
   }
 }
 
-let blurTimeout: ReturnType<typeof setTimeout> | null = null
-
 function handleEditBlur() {
   // Delay to check if focus moved to the parent-document toolbar
-  blurTimeout = setTimeout(() => {
+  setTimeout(() => {
     if (props.toolbarActive) return  // toolbar is being used, don't end editing
     stopInlineEdit()
   }, 150)

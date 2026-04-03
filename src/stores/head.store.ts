@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { HeadSettings, GoogleFont, HtmlAttributeSelector } from '@/types/mjml.types'
+import type { HeadSettings, GoogleFont } from '@/types/mjml.types'
 import { createDefaultHeadSettings } from '@/types/mjml.types'
 
 export const useHeadStore = defineStore('head', () => {

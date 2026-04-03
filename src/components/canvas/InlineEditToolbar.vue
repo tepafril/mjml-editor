@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { Bold, Italic, Underline, Subscript, Superscript, Palette } from 'lucide-vue-next'
-import { useHeadStore } from '@/stores/head.store'
-
 const props = defineProps<{
   iframeDoc: Document | null
   editingNodeId: string | null
@@ -12,16 +10,9 @@ const emit = defineEmits<{
   'update:active': [value: boolean]
 }>()
 
-const headStore = useHeadStore()
-
 const toolbarRef = ref<HTMLElement>()
 const isInteracting = ref(false)
 
-const fontOptions = computed(() =>
-  headStore.settings.fonts
-    .filter(f => f.name)
-    .map(f => f.name)
-)
 
 function onToolbarFocusIn() {
   isInteracting.value = true
@@ -168,11 +159,6 @@ function onColorChange(e: Event) {
   execCommand('foreColor', val)
 }
 
-function onFontFamilyChange(e: Event) {
-  const val = (e.target as HTMLSelectElement).value
-  currentFontFamily.value = val
-  execCommand('fontName', val)
-}
 
 watch(() => props.editingNodeId, (id) => {
   if (id) {

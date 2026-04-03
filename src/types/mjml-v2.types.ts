@@ -135,32 +135,6 @@ export const NODE_DEFAULT_PROPS: Record<NodeType, Record<string, string>> = {
   },
   'mj-raw': {},
   // --- Phase 4 ---
-  'mj-accordion': {
-    'border': '1px solid #e0e0e0',
-    'padding': '10px 25px',
-    'icon-position': 'right',
-    'icon-align': 'middle',
-    'icon-height': '32px',
-    'icon-width': '32px',
-  },
-  'mj-accordion-element': {
-    'background-color': '',
-    'font-family': 'Arial, sans-serif',
-  },
-  'mj-accordion-title': {
-    'color': '#000000',
-    'font-size': '16px',
-    'font-family': 'Arial, sans-serif',
-    'padding': '16px',
-    'background-color': '#f0f0f0',
-  },
-  'mj-accordion-text': {
-    'color': '#333333',
-    'font-size': '14px',
-    'font-family': 'Arial, sans-serif',
-    'padding': '16px',
-    'background-color': '#ffffff',
-  },
 }
 
 export const NODE_DEFAULT_CONTENT: Partial<Record<NodeType, string>> = {
@@ -171,8 +145,6 @@ export const NODE_DEFAULT_CONTENT: Partial<Record<NodeType, string>> = {
   'mj-navbar-link': 'Link',
   'mj-table': '<tr><td style="padding:4px">Cell 1</td><td style="padding:4px">Cell 2</td></tr><tr><td style="padding:4px">Cell 3</td><td style="padding:4px">Cell 4</td></tr>',
   'mj-raw': '<!-- Your HTML here -->',
-  'mj-accordion-title': 'Question?',
-  'mj-accordion-text': 'Answer goes here...',
 }
 
 // --- Head Settings ---
